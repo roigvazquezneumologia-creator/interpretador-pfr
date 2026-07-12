@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interpretador PFR - Interpretación Integral</title>
+    <title>Interpretador PFR - Dr. Francisco Jose Roig Vázquez</title>
     <style>
         * {
             margin: 0;
@@ -37,6 +37,33 @@
         .header h1 {
             font-size: 32px;
             margin-bottom: 10px;
+        }
+        
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.95;
+            margin-bottom: 8px;
+        }
+        
+        .header-author {
+            font-size: 13px;
+            font-weight: bold;
+            color: #a8d8ff;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .header-author-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .header-author-title {
+            font-size: 12px;
+            color: #a8d8ff;
+            font-style: italic;
         }
         
         .content-wrapper {
@@ -306,6 +333,21 @@
             color: #0c4a6e;
         }
         
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 11px;
+            color: #666;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 20px;
+        }
+        
+        .footer-author {
+            font-weight: bold;
+            color: #1e3a5f;
+            margin-bottom: 5px;
+        }
+        
         @media (max-width: 1200px) {
             .content-wrapper {
                 grid-template-columns: 1fr;
@@ -317,7 +359,11 @@
     <div class="container">
         <div class="header">
             <h1>🫁 INTERPRETADOR DE PFR COMPLETO</h1>
-            <p>40+ Parámetros | GLI 2012 | GOLD 2023 | ERS/ATS 2019</p>
+            <div class="header-subtitle">40+ Parámetros | GLI 2012 | GOLD 2023 | ERS/ATS 2019</div>
+            <div class="header-author">
+                <div class="header-author-name">Dr. Francisco Jose Roig Vázquez</div>
+                <div class="header-author-title">Doctor en Medicina • Especialista en Neumología</div>
+            </div>
         </div>
         
         <div class="content-wrapper">
@@ -497,6 +543,10 @@
                         Haz clic en ANALIZAR para ver resultados
                     </p>
                 </div>
+                <div class="footer">
+                    <div class="footer-author">Dr. Francisco Jose Roig Vázquez</div>
+                    <div>Doctor en Medicina • Especialista en Neumología</div>
+                </div>
             </div>
         </div>
     </div>
@@ -573,7 +623,6 @@
             let interpretacionPatron = 'Función pulmonar normal.';
             let mecanismo = '';
             let correlaciones = '';
-            let recomendaciones = '';
             
             if (ratio < 70) {
                 patron = 'PATRÓN OBSTRUCTIVO';
@@ -620,7 +669,6 @@
                 mecanismo = 'Afectación tanto de vía aérea como de parénquima/volúmenes pulmonares.';
             }
             
-            // Generación de texto de interpretación integral
             let interpretacionIntegral = `
                 <div class="interpretation-section">
                     <div class="section-label">📋 RESUMEN CLÍNICO DEL PATRÓN FUNCIONAL:</div>
@@ -675,9 +723,6 @@
             
             const fev1 = parseFloat(document.getElementById('fev1').value);
             const fvc = parseFloat(document.getElementById('fvc').value);
-            const fev6 = parseFloat(document.getElementById('fev6').value);
-            const fef = parseFloat(document.getElementById('fef').value);
-            const pef = parseFloat(document.getElementById('pef').value);
             const tlc = parseFloat(document.getElementById('tlc').value);
             const rv = parseFloat(document.getElementById('rv').value);
             const dlco = parseFloat(document.getElementById('dlco').value);
