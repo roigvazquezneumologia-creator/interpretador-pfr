@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interpretador de Pruebas Funcionales Respiratorias</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><defs><linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%231e3a5f;stop-opacity:1' /><stop offset='100%' style='stop-color:%2300bcd4;stop-opacity:1' /></linearGradient></defs><circle cx='100' cy='100' r='95' fill='url(%23grad)'/><text x='100' y='125' font-family='Arial,sans-serif' font-size='70' font-weight='bold' fill='white' text-anchor='middle'>PFR</text><line x1='50' y1='140' x2='150' y2='140' stroke='%23ff9800' stroke-width='6' stroke-linecap='round'/></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Calibri', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1500px; margin: 0 auto; }
+        
+        header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8c 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+        }
+        
+        .header-logo {
+            width: 70px;
+            height: 70px;
+            flex-shrink: 0;
+        }
+        
+        .header-center {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .header-center h1 { 
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+        }
+        
+        .header-center p {
+            font-size: 12px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+        
+        .header-right {
+            text-align: right;
+            font-size: 28px;
+            font-weight: 700;
+            opacity: 0.9;
+        }
+        
+        .main { display: grid; grid-template-columns: 420px 1fr; gap: 20px; margin-bottom: 20px; }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: white;
+            background: #1e3a5f;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .section {
+            margin-bottom: 18px;
+            padding-bottom: 13px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .section:last-child { border-bottom: none; }
+        
+        .section-title {
+            font-weight: 700;
+            color: #1e3a5f;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.1);
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8c 100%);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3); }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .result-box {
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .result-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .result-normal {
+            background: #dcfce7;
+            border-color: #22c55e;
+            color: #15803d;
+        }
+        
+        .result-warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+        
+        .result-danger {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+        
+        .hidden { display: none; }
+        
+        .guias {
+            background: #f0f7ff;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            border-left: 3px solid #1e3a5f;
+        }
+        
+        .guias strong { color: #1e3a5f; }
+        
+        .resumen-integral {
+            background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%);
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #1e3a5f;
+            margin-bottom: 15px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        
+        .resumen-titulo {
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+            font-size: 13px;
+            text-decoration: underline;
+        }
+        
+        .resumen-seccion {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #d0d0d0;
+        }
+        
+        .resumen-seccion:last-child { border-bottom: none; }
+        
+        .resumen-subtitulo {
+            font-weight: 700;
+            color: #2d5a8c;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+        
+        .resumen-texto {
+            color: #333;
+            font-size: 11px;
+        }
+        
+        footer {
+            background: #1e3a5f;
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <svg class="header-logo" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'>
+                    <circle cx='100' cy='100' r='85' fill='none' stroke='%23ff9800' stroke-width='8'/>
+                    <text x='100' y='128' font-family='Arial,sans-serif' font-size='80' font-weight='bold' fill='white' text-anchor='middle'>PFR</text>
+                </svg>
+                <div class="header-center">
+                    <h1>INTERPRETADOR DE PRUEBAS FUNCIONALES RESPIRATORIAS</h1>
+                    <p>Autor: Dr Francisco José Roig Vázquez | Especialista en Neumología</p>
+                </div>
+            </div>
+            <div class="header-right">
+                2026
+            </div>
+        </header>
+        
+        <div class="main">
+            <!-- ENTRADA -->
+            <div class="card" style="height: fit-content; max-height: 90vh; overflow-y: auto;">
+                <h2>📋 DATOS DE ENTRADA</h2>
+                
+                <div class="section">
+                    <div class="section-title">Espirometría</div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>FEV1 (L)</label>
+                            <input type="number" id="fev1" step="0.01" placeholder="ej: 2.5">
+                        </div>
+                        <div class="form-group">
+                            <label>FVC (L)</label>
+                            <input type="number" id="fvc" step="0.01" placeholder="ej: 3.8">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>FEV1/FVC (%)</label>
+                            <input type="number" id="ratio" step="0.1" placeholder="ej: 65">
+                        </div>
+                        <div class="form-group">
+                            <label>FEV1 % pred</label>
+                            <input type="number" id="fev1_pred" step="0.1" placeholder="ej: 70">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Difusión (DLCO)</div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>DLCO (mL/min/mmHg)</label>
+                            <input type="number" id="dlco" step="0.1" placeholder="ej: 18">
+                        </div>
+                        <div class="form-group">
+                            <label>DLCO % pred</label>
+                            <input type="number" id="dlco_pred" step="0.1" placeholder="ej: 95">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Volúmenes Pulmonares</div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>TLC (L)</label>
+                            <input type="number" id="tlc" step="0.1" placeholder="ej: 6.5">
+                        </div>
+                        <div class="form-group">
+                            <label>TLC % pred</label>
+                            <input type="number" id="tlc_pred" step="0.1" placeholder="ej: 105">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>RV/TLC (%)</label>
+                            <input type="number" id="rv_tlc" step="0.1" placeholder="ej: 30">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Fuerza Muscular Respiratoria</div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>Sexo</label>
+                            <select id="sexo">
+                                <option value="">Seleccionar</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Edad (años)</label>
+                            <input type="number" id="edad_pim" step="1" placeholder="ej: 45">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>PIM (cmH₂O)</label>
+                            <input type="number" id="pim" step="1" placeholder="ej: -80">
+                        </div>
+                        <div class="form-group">
+                            <label>PIM % predicho</label>
+                            <input type="number" id="pim_pred" step="0.1" placeholder="ej: 85">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>PEM (cmH₂O)</label>
+                            <input type="number" id="pem" step="1" placeholder="ej: 120">
+                        </div>
+                        <div class="form-group">
+                            <label>PEM % predicho</label>
+                            <input type="number" id="pem_pred" step="0.1" placeholder="ej: 95">
+                        </div>
+                    </div>
+                    <p style="font-size: 9px; color: #666; margin-top: 5px;">* PIM valores negativos. Más negativo = mejor.</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">FeNO (ppb)</div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>FeNO (ppb)</label>
+                            <input type="number" id="feno" step="0.1" placeholder="ej: 32">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Broncodilatador</div>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>FEV1 Pre-BD (L)</label>
+                            <input type="number" id="fev1_pre" step="0.01" placeholder="ej: 1.8">
+                        </div>
+                        <div class="form-group">
+                            <label>FEV1 Post-BD (L)</label>
+                            <input type="number" id="fev1_post" step="0.01" placeholder="ej: 2.1">
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="button" onclick="analizar()">🔍 ANALIZAR</button>
+            </div>
+            
+            <!-- RESULTADOS -->
+            <div>
+                <div class="card" id="sin-datos">
+                    <div style="text-align: center; color: #999; padding: 40px 20px;">
+                        <p style="font-size: 14px;">📊 Ingresa datos y haz clic en "ANALIZAR"</p>
+                    </div>
+                </div>
+                
+                <div id="resultados" class="hidden">
+                    <!-- ESPIROMETRÍA -->
+                    <div class="card">
+                        <h2>📊 ESPIROMETRÍA</h2>
+                        <div id="espiro-guias" class="guias"></div>
+                        <div id="espiro-result" class="results-grid"></div>
+                    </div>
+                    
+                    <!-- DIFUSIÓN -->
+                    <div class="card" style="margin-top: 15px;" id="difusion-card" class="hidden">
+                        <h2>🫁 DIFUSIÓN PULMONAR</h2>
+                        <div id="difusion-guias" class="guias"></div>
+                        <div id="difusion-result" class="results-grid"></div>
+                    </div>
+                    
+                    <!-- VOLÚMENES -->
+                    <div class="card" style="margin-top: 15px;" id="volumenes-card" class="hidden">
+                        <h2>💨 VOLÚMENES PULMONARES</h2>
+                        <div id="volumenes-guias" class="guias"></div>
+                        <div id="volumenes-result" class="results-grid"></div>
+                    </div>
+                    
+                    <!-- FUERZA MUSCULAR -->
+                    <div class="card" style="margin-top: 15px;" id="fuerza-card" class="hidden">
+                        <h2>💪 FUERZA MUSCULAR RESPIRATORIA</h2>
+                        <div id="fuerza-guias" class="guias"></div>
+                        <div id="fuerza-result" class="results-grid"></div>
+                    </div>
+                    
+                    <!-- FeNO -->
+                    <div class="card" style="margin-top: 15px;" id="feno-card" class="hidden">
+                        <h2>🌫️ FeNO</h2>
+                        <div id="feno-guias" class="guias"></div>
+                        <div id="feno-result" class="results-grid"></div>
+                    </div>
+                    
+                    <!-- BRONCODILATADOR -->
+                    <div class="card" style="margin-top: 15px;" id="bd-card" class="hidden">
+                        <h2>💊 RESPUESTA BRONCODILATADORA</h2>
+                        <div id="bd-result"></div>
+                    </div>
+                    
+                    <!-- RESUMEN INTEGRAL -->
+                    <div class="card" style="margin-top: 15px;">
+                        <h2>📋 RESUMEN DIAGNÓSTICO</h2>
+                        <div id="resumen-integral" class="resumen-integral"></div>
+                        <div style="margin-top: 15px; font-size: 10px; color: #666; line-height: 1.5;">
+                            <p><strong>⚠️ Nota importante:</strong> Interpretación orientativa. Correlacionar con contexto clínico.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            © 2026 Interpretador de Pruebas Funcionales Respiratorias | Dr Francisco José Roig Vázquez - Médico Neumólogo
+        </footer>
+    </div>
+    
+    <script>
+        function norm(val) {
+            const n = parseFloat(val);
+            return n > 1 ? n / 100 : n;
+        }
+        
+        function interpretarPIM(pim, pim_pred) {
+            pim = parseFloat(pim);
+            pim_pred = norm(pim_pred);
+            
+            if (pim_pred >= 0.80) {
+                return { categoria: 'NORMAL', clase: 'result-normal', emoji: '✓', descripcion: 'Fuerza inspiratoria adecuada' };
+            } else if (pim_pred >= 0.60) {
+                return { categoria: 'LEVE', clase: 'result-warning', emoji: '⚠️', descripcion: 'Debilidad inspiratoria leve' };
+            } else if (pim_pred >= 0.40) {
+                return { categoria: 'MODERADA', clase: 'result-warning', emoji: '⬆️', descripcion: 'Debilidad inspiratoria moderada' };
+            } else {
+                return { categoria: 'SEVERA', clase: 'result-danger', emoji: '🔴', descripcion: 'Debilidad inspiratoria severa' };
+            }
+        }
+        
+        function interpretarPEM(pem, pem_pred) {
+            pem = parseFloat(pem);
+            pem_pred = norm(pem_pred);
+            
+            if (pem_pred >= 0.80) {
+                return { categoria: 'NORMAL', clase: 'result-normal', emoji: '✓', descripcion: 'Fuerza espiratoria adecuada' };
+            } else if (pem_pred >= 0.60) {
+                return { categoria: 'LEVE', clase: 'result-warning', emoji: '⚠️', descripcion: 'Debilidad espiratoria leve' };
+            } else if (pem_pred >= 0.40) {
+                return { categoria: 'MODERADA', clase: 'result-warning', emoji: '⬆️', descripcion: 'Debilidad espiratoria moderada' };
+            } else {
+                return { categoria: 'SEVERA', clase: 'result-danger', emoji: '🔴', descripcion: 'Debilidad espiratoria severa' };
+            }
+        }
+        
+        function interpretarFeno(feno, edad) {
+            feno = parseFloat(feno);
+            edad = parseInt(edad) || 25;
+            let cutoff_normal = edad < 12 ? 20 : 25;
+            
+            if (feno < cutoff_normal) {
+                return { categoria: 'NORMAL', clase: 'result-normal', emoji: '✓' };
+            } else if (feno < 35) {
+                return { categoria: 'INTERMEDIO', clase: 'result-warning', emoji: '⚠️' };
+            } else if (feno <= 50) {
+                return { categoria: 'ELEVADO', clase: 'result-warning', emoji: '⬆️' };
+            } else {
+                return { categoria: 'MUY ELEVADO', clase: 'result-danger', emoji: '🔴' };
+            }
+        }
+        
+        function analizar() {
+            const fev1 = parseFloat(document.getElementById('fev1').value);
+            const fvc = parseFloat(document.getElementById('fvc').value);
+            const ratio = parseFloat(document.getElementById('ratio').value);
+            const fev1_pred = parseFloat(document.getElementById('fev1_pred').value);
+            
+            if (!fev1 || !fvc || !ratio || !fev1_pred) {
+                alert('⚠️ Completa: FEV1, FVC, FEV1/FVC, FEV1% predicho');
+                return;
+            }
+            
+            document.getElementById('sin-datos').classList.add('hidden');
+            document.getElementById('resultados').classList.remove('hidden');
+            
+            // ESPIROMETRÍA
+            const ratio_n = norm(ratio);
+            const fev1_pred_n = norm(fev1_pred);
+            
+            let patron = 'NORMAL';
+            let clase = 'result-normal';
+            let gold = '';
+            let severidad = '';
+            
+            if (ratio_n < 0.70) {
+                patron = '🔴 OBSTRUCTIVO';
+                clase = 'result-danger';
+                
+                if (fev1_pred_n >= 0.80) {
+                    severidad = 'LEVE (GOLD 1)';
+                    gold = 'GOLD 1';
+                } else if (fev1_pred_n >= 0.60) {
+                    severidad = 'MODERADO (GOLD 2)';
+                    gold = 'GOLD 2';
+                } else if (fev1_pred_n >= 0.40) {
+                    severidad = 'SEVERO (GOLD 3)';
+                    gold = 'GOLD 3';
+                } else {
+                    severidad = 'MUY SEVERO (GOLD 4)';
+                    gold = 'GOLD 4';
+                }
+            }
+            
+            document.getElementById('espiro-guias').innerHTML = `<strong>Criterios ATS/ERS:</strong> FEV1/FVC <70% = Obstrucción`;
+            
+            let html_espiro = `
+                <div class="result-box ${clase}">
+                    <div class="result-title">${patron}</div>
+                    FEV1/FVC: ${(ratio_n * 100).toFixed(1)}% | FEV1: ${(fev1_pred_n * 100).toFixed(1)}%
+                </div>
+            `;
+            
+            if (severidad) {
+                html_espiro += `<div class="result-box result-warning"><div class="result-title">SEVERIDAD</div>${severidad}</div>`;
+            }
+            
+            document.getElementById('espiro-result').innerHTML = html_espiro;
+            
+            // DIFUSIÓN
+            const dlco = document.getElementById('dlco').value;
+            if (dlco) {
+                const dlco_pred_n = norm(document.getElementById('dlco_pred').value);
+                const kco_pred_n = norm(document.getElementById('kco_pred').value);
+                
+                document.getElementById('difusion-card').classList.remove('hidden');
+                document.getElementById('difusion-guias').innerHTML = `<strong>Criterios ATS/ERS:</strong> DLCO <80% = Reducido`;
+                
+                document.getElementById('difusion-result').innerHTML = `
+                    <div class="result-box ${dlco_pred_n < 0.80 ? 'result-warning' : 'result-normal'}">
+                        <div class="result-title">DLCO</div>
+                        ${dlco_pred_n < 0.80 ? 'REDUCIDO' : 'NORMAL'} (${document.getElementById('dlco_pred').value}%)
+                    </div>
+                    <div class="result-box ${kco_pred_n < 0.80 ? 'result-warning' : 'result-normal'}">
+                        <div class="result-title">KCO</div>
+                        ${kco_pred_n < 0.80 ? 'REDUCIDO' : 'NORMAL'} (${document.getElementById('kco_pred').value}%)
+                    </div>
+                `;
+            }
+            
+            // VOLÚMENES
+            const tlc = document.getElementById('tlc').value;
+            if (tlc) {
+                const tlc_pred_n = norm(document.getElementById('tlc_pred').value);
+                const rv_tlc = parseFloat(document.getElementById('rv_tlc').value);
+                
+                let tlc_clase = 'result-normal';
+                let tlc_txt = 'NORMAL';
+                if (tlc_pred_n < 0.80) { tlc_clase = 'result-warning'; tlc_txt = 'REDUCIDO'; }
+                if (tlc_pred_n > 1.20) { tlc_clase = 'result-danger'; tlc_txt = 'ELEVADO'; }
+                
+                let atrap_clase = rv_tlc < 35 ? 'result-normal' : rv_tlc < 45 ? 'result-warning' : 'result-danger';
+                let atrap_txt = rv_tlc < 35 ? 'NORMAL' : rv_tlc < 45 ? 'MODERADO' : 'SEVERO';
+                
+                document.getElementById('volumenes-card').classList.remove('hidden');
+                document.getElementById('volumenes-result').innerHTML = `
+                    <div class="result-box ${tlc_clase}"><div class="result-title">TLC</div>${tlc_txt} (${document.getElementById('tlc_pred').value}%)</div>
+                    <div class="result-box ${atrap_clase}"><div class="result-title">ATRAPAMIENTO</div>${atrap_txt}</div>
+                `;
+            }
+            
+            // FUERZA MUSCULAR
+            const pim = document.getElementById('pim').value;
+            const pem = document.getElementById('pem').value;
+            
+            if (pim || pem) {
+                document.getElementById('fuerza-card').classList.remove('hidden');
+                
+                let html_fuerza = '';
+                
+                if (pim) {
+                    const pim_pred = document.getElementById('pim_pred').value;
+                    const pim_interp = interpretarPIM(pim, pim_pred);
+                    html_fuerza += `
+                        <div class="result-box ${pim_interp.clase}">
+                            <div class="result-title">PIM</div>
+                            ${pim_interp.emoji} ${pim_interp.categoria} | ${pim} cmH₂O (${pim_pred}%)
+                        </div>
+                    `;
+                }
+                
+                if (pem) {
+                    const pem_pred = document.getElementById('pem_pred').value;
+                    const pem_interp = interpretarPEM(pem, pem_pred);
+                    html_fuerza += `
+                        <div class="result-box ${pem_interp.clase}">
+                            <div class="result-title">PEM</div>
+                            ${pem_interp.emoji} ${pem_interp.categoria} | ${pem} cmH₂O (${pem_pred}%)
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('fuerza-guias').innerHTML = `
+                    <strong>Criterios ATS/ERS:</strong> Normal >80% | Leve 60-80% | Moderada 40-60% | Severa <40%
+                `;
+                
+                document.getElementById('fuerza-result').innerHTML = html_fuerza;
+            }
+            
+            // FeNO
+            const feno = document.getElementById('feno').value;
+            if (feno) {
+                const feno_interp = interpretarFeno(feno, document.getElementById('edad_pim').value);
+                
+                document.getElementById('feno-card').classList.remove('hidden');
+                document.getElementById('feno-guias').innerHTML = `<strong>Criterios ATS:</strong> <25 ppb = Normal | 25-50 = Posible | >50 = Probable`;
+                
+                document.getElementById('feno-result').innerHTML = `
+                    <div class="result-box ${feno_interp.clase}">
+                        <div class="result-title">FeNO</div>
+                        ${feno_interp.emoji} ${feno_interp.categoria} | ${feno} ppb
+                    </div>
+                `;
+            }
+            
+            // BRONCODILATADOR
+            const fev1_pre = parseFloat(document.getElementById('fev1_pre').value);
+            const fev1_post = parseFloat(document.getElementById('fev1_post').value);
+            
+            if (fev1_pre && fev1_post) {
+                const cambio_abs = fev1_post - fev1_pre;
+                const cambio_pct = (cambio_abs / fev1_pre) * 100;
+                const positiva = cambio_pct >= 12 && cambio_abs >= 0.2;
+                
+                document.getElementById('bd-card').classList.remove('hidden');
+                document.getElementById('bd-result').innerHTML = `
+                    <div class="result-box ${positiva ? 'result-normal' : 'result-warning'}">
+                        <div class="result-title">${positiva ? '✓ RESPUESTA POSITIVA' : '✗ RESPUESTA NEGATIVA'}</div>
+                        ${fev1_pre}L → ${fev1_post}L (+${cambio_abs.toFixed(2)}L, +${cambio_pct.toFixed(1)}%)
+                    </div>
+                `;
+            }
+            
+            // RESUMEN
+            let resumen = `<div class="resumen-titulo">INTERPRETACIÓN INTEGRAL</div>`;
+            resumen += `<div class="resumen-seccion"><div class="resumen-subtitulo">Ventilación:</div><div class="resumen-texto">${patron} ${severidad ? `- ${severidad}` : ''}</div></div>`;
+            
+            if (dlco) {
+                const dlco_pred_n = norm(document.getElementById('dlco_pred').value);
+                resumen += `<div class="resumen-seccion"><div class="resumen-subtitulo">Difusión:</div><div class="resumen-texto">DLCO ${dlco_pred_n < 0.80 ? 'REDUCIDO' : 'NORMAL'}</div></div>`;
+            }
+            
+            if (pim || pem) {
+                resumen += `<div class="resumen-seccion"><div class="resumen-subtitulo">Fuerza muscular:</div><div class="resumen-texto">`;
+                if (pim) resumen += `PIM ${norm(document.getElementById('pim_pred').value) >= 0.80 ? 'Normal' : 'Disminuida'}.`;
+                if (pem) resumen += ` PEM ${norm(document.getElementById('pem_pred').value) >= 0.80 ? 'Normal' : 'Disminuida'}.`;
+                resumen += `</div></div>`;
+            }
+            
+            resumen += `<div class="resumen-seccion"><div class="resumen-subtitulo">Conclusión:</div><div class="resumen-texto">Perfil funcional de ${patron}.</div></div>`;
+            
+            document.getElementById('resumen-integral').innerHTML = resumen;
+        }
+        
+        document.addEventListener('keypress', e => { if (e.key === 'Enter') analizar(); });
+    </script>
+</body>
+</html>
