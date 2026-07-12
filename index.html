@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interpretador PFR Completo - 40+ Parámetros</title>
+    <title>Interpretador PFR - Interpretación Integral</title>
     <style>
         * {
             margin: 0;
@@ -15,7 +15,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #333;
-            line-height: 1.6;
             min-height: 100vh;
         }
         
@@ -38,30 +37,22 @@
         .header h1 {
             font-size: 32px;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .header p {
-            font-size: 14px;
-            opacity: 0.95;
-            margin-bottom: 5px;
         }
         
         .content-wrapper {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            margin-bottom: 30px;
         }
         
-        .input-panel, .output-panel {
+        .panel {
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
         }
         
         .panel-header {
@@ -70,19 +61,16 @@
             padding: 20px;
             font-size: 18px;
             font-weight: bold;
-            display: flex;
-            gap: 10px;
-            align-items: center;
         }
         
-        .panel-content {
+        .panel-body {
             padding: 25px;
-            max-height: 75vh;
             overflow-y: auto;
+            flex: 1;
         }
         
-        .collapsible-section {
-            margin-bottom: 25px;
+        .section {
+            margin-bottom: 20px;
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             overflow: hidden;
@@ -92,12 +80,12 @@
             background: #f3f4f6;
             padding: 15px;
             cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             font-weight: bold;
             color: #1e3a5f;
             user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             transition: background 0.3s;
         }
         
@@ -106,20 +94,21 @@
         }
         
         .section-content {
-            padding: 20px;
             display: none;
+            padding: 20px;
+            background: white;
         }
         
-        .section-content.active {
+        .section-content.show {
             display: block;
         }
         
-        .toggle-icon {
-            transition: transform 0.3s;
+        .toggle-arrow {
             font-size: 18px;
+            transition: transform 0.3s;
         }
         
-        .toggle-icon.active {
+        .toggle-arrow.open {
             transform: rotate(180deg);
         }
         
@@ -129,7 +118,7 @@
             gap: 15px;
         }
         
-        .form-grid.single {
+        .form-grid.full {
             grid-template-columns: 1fr;
         }
         
@@ -144,7 +133,6 @@
             color: #555;
             margin-bottom: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         
         .form-group input, .form-group select {
@@ -152,35 +140,20 @@
             border: 2px solid #ddd;
             border-radius: 6px;
             font-size: 13px;
-            transition: all 0.3s;
         }
         
         .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #1e3a5f;
-            box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.1);
-        }
-        
-        .info-badge {
-            display: inline-block;
-            background: #e0f2fe;
-            color: #0369a1;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            margin-left: 5px;
-            font-weight: bold;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
         }
         
         .button-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-top: 30px;
-            position: sticky;
-            bottom: 0;
+            padding: 20px;
             background: white;
-            padding: 20px 0;
             border-top: 2px solid #e5e7eb;
         }
         
@@ -193,13 +166,11 @@
             cursor: pointer;
             transition: all 0.3s;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
         
         .btn-analizar {
             background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
         }
         
         .btn-analizar:hover {
@@ -210,7 +181,6 @@
         .btn-limpiar {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
         
         .btn-limpiar:hover {
@@ -218,7 +188,7 @@
             box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
         }
         
-        .result-block {
+        .result-item {
             background: #f8fafc;
             padding: 20px;
             margin-bottom: 20px;
@@ -231,9 +201,6 @@
             font-weight: bold;
             color: #1e3a5f;
             margin-bottom: 12px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
         }
         
         .result-table {
@@ -247,7 +214,6 @@
             padding: 10px;
             text-align: left;
             font-weight: bold;
-            color: #333;
             border-bottom: 2px solid #d1d5db;
         }
         
@@ -256,21 +222,28 @@
             border-bottom: 1px solid #e5e7eb;
         }
         
-        .result-table tr:hover {
-            background: #f3f4f6;
-        }
+        .severity-normal { background: #dcfce7; color: #166534; }
+        .severity-leve { background: #fef08a; color: #713f12; }
+        .severity-moderado { background: #fed7aa; color: #92400e; }
+        .severity-severo { background: #fecaca; color: #7f1d1d; }
         
-        .severity-normal { background: #dcfce7; color: #166534; font-weight: bold; }
-        .severity-leve { background: #fef08a; color: #713f12; font-weight: bold; }
-        .severity-moderado { background: #fed7aa; color: #92400e; font-weight: bold; }
-        .severity-severo { background: #fecaca; color: #7f1d1d; font-weight: bold; }
+        .badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
         
         .pattern-box {
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             border: 2px solid #0ea5e9;
             padding: 20px;
             border-radius: 8px;
-            margin: 20px 0;
+            margin-bottom: 20px;
             text-align: center;
         }
         
@@ -281,35 +254,56 @@
             margin-bottom: 10px;
         }
         
-        .pattern-description {
-            font-size: 13px;
-            color: #0c4a6e;
-            line-height: 1.6;
+        .interpretation-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
         
-        .severity-gauge {
+        .interpretation-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 15px;
             display: flex;
+            gap: 10px;
             align-items: center;
-            gap: 15px;
-            margin: 20px 0;
         }
         
-        .gauge-bar {
-            flex: 1;
-            height: 30px;
-            background: linear-gradient(90deg, #22c55e 0%, #eab308 33%, #f59e0b 66%, #ef4444 100%);
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
+        .interpretation-content {
+            font-size: 13px;
+            color: #78350f;
+            line-height: 1.8;
         }
         
-        .gauge-indicator {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: #000;
-            height: 100%;
+        .interpretation-section {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(120, 53, 15, 0.2);
+        }
+        
+        .interpretation-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .section-label {
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 5px;
+        }
+        
+        .recommendation-box {
+            background: #e0f2fe;
+            border: 2px solid #0ea5e9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #0c4a6e;
         }
         
         @media (max-width: 1200px) {
@@ -317,47 +311,27 @@
                 grid-template-columns: 1fr;
             }
         }
-        
-        .scrollbar::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        
-        .scrollbar::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        
-        .panel-content {
-            scrollbar-width: thin;
-            scrollbar-color: #888 #f1f1f1;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🫁 INTERPRETADOR DE PFR COMPLETO</h1>
-            <p>Análisis Integral de Pruebas Funcionales Respiratorias</p>
-            <p style="font-size: 12px; margin-top: 10px; opacity: 0.85;">40+ parámetros | GLI 2012 | GOLD 2023 | ERS/ATS 2019</p>
+            <p>40+ Parámetros | GLI 2012 | GOLD 2023 | ERS/ATS 2019</p>
         </div>
         
         <div class="content-wrapper">
-            <!-- PANEL DE ENTRADA -->
-            <div class="input-panel">
+            <!-- PANEL IZQUIERDO -->
+            <div class="panel">
                 <div class="panel-header">📋 DATOS DE ENTRADA</div>
-                <div class="panel-content scrollbar">
+                <div class="panel-body">
                     
-                    <!-- DATOS DEL PACIENTE -->
-                    <div class="collapsible-section">
+                    <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
                             <span>👤 DATOS DEL PACIENTE</span>
-                            <span class="toggle-icon">▼</span>
+                            <span class="toggle-arrow open">▼</span>
                         </div>
-                        <div class="section-content active">
+                        <div class="section-content show">
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label>Edad (años)</label>
@@ -382,190 +356,127 @@
                         </div>
                     </div>
                     
-                    <!-- ESPIROMETRÍA DINÁMICA COMPLETA -->
-                    <div class="collapsible-section">
+                    <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
-                            <span>📈 ESPIROMETRÍA DINÁMICA <span class="info-badge">10 parámetros</span></span>
-                            <span class="toggle-icon">▼</span>
+                            <span>📈 ESPIROMETRÍA DINÁMICA <span class="badge">10 parámetros</span></span>
+                            <span class="toggle-arrow open">▼</span>
                         </div>
-                        <div class="section-content active">
+                        <div class="section-content show">
                             <div class="form-grid">
                                 <div class="form-group">
-                                    <label>FEV1 (L) - Vol. Esp. 1s</label>
+                                    <label>FEV1 (L)</label>
                                     <input type="number" id="fev1" value="2.10" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>FVC (L) - Cap. Vital</label>
+                                    <label>FVC (L)</label>
                                     <input type="number" id="fvc" value="4.20" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>FEV6 (L) - Vol. Esp. 6s</label>
+                                    <label>FEV6 (L)</label>
                                     <input type="number" id="fev6" value="4.10" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>FEF25-75% (L/s) - Flujo medio</label>
+                                    <label>FEF25-75% (L/s)</label>
                                     <input type="number" id="fef" value="0.85" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>PEF (L/s) - Flujo pico</label>
+                                    <label>PEF (L/s)</label>
                                     <input type="number" id="pef" value="6.50" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>FIV1 (L) - Vol. Insp. 1s</label>
+                                    <label>FIV1 (L)</label>
                                     <input type="number" id="fiv1" value="3.80" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>FIC (L) - Cap. Inspiratoria</label>
+                                    <label>FIC (L)</label>
                                     <input type="number" id="fic" value="4.00" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>SVC (L) - Vital Lenta</label>
+                                    <label>SVC (L)</label>
                                     <input type="number" id="svc" value="4.25" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>FIVC (L) - Vital Insp.</label>
+                                    <label>FIVC (L)</label>
                                     <input type="number" id="fivc" value="4.30" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label>MVV (L/min) - Ventilación máx.</label>
+                                    <label>MVV (L/min)</label>
                                     <input type="number" id="mvv" value="140" step="1" min="0">
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- VOLÚMENES PULMONARES COMPLETOS -->
-                    <div class="collapsible-section">
+                    <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
-                            <span>📊 VOLÚMENES PULMONARES <span class="info-badge">8 parámetros</span></span>
-                            <span class="toggle-icon">▼</span>
+                            <span>📊 VOLÚMENES PULMONARES <span class="badge">8 parámetros</span></span>
+                            <span class="toggle-arrow">▼</span>
                         </div>
                         <div class="section-content">
                             <div class="form-grid">
-                                <div class="form-group">
-                                    <label>TLC (L) - Cap. Pulmonar Total</label>
-                                    <input type="number" id="tlc" value="6.20" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>RV (L) - Vol. Residual</label>
-                                    <input type="number" id="rv" value="2.20" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>FRC (L) - Cap. Residual Func.</label>
-                                    <input type="number" id="frc" value="3.00" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>IC (L) - Cap. Inspiratoria</label>
-                                    <input type="number" id="ic" value="3.10" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>ERV (L) - Vol. Esp. Reserva</label>
-                                    <input type="number" id="erv" value="1.20" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>VC (L) - Cap. Vital</label>
-                                    <input type="number" id="vc" value="4.30" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>VT (L) - Vol. Tidal reposo</label>
-                                    <input type="number" id="vt" value="0.50" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>RV/TLC (%) - Atrapamiento</label>
-                                    <input type="number" id="rvtlc" value="35" step="0.1" min="0" max="100">
-                                </div>
+                                <div class="form-group"><label>TLC (L)</label><input type="number" id="tlc" value="6.20" step="0.1" min="0"></div>
+                                <div class="form-group"><label>RV (L)</label><input type="number" id="rv" value="2.20" step="0.1" min="0"></div>
+                                <div class="form-group"><label>FRC (L)</label><input type="number" id="frc" value="3.00" step="0.1" min="0"></div>
+                                <div class="form-group"><label>IC (L)</label><input type="number" id="ic" value="3.10" step="0.1" min="0"></div>
+                                <div class="form-group"><label>ERV (L)</label><input type="number" id="erv" value="1.20" step="0.1" min="0"></div>
+                                <div class="form-group"><label>VC (L)</label><input type="number" id="vc" value="4.30" step="0.1" min="0"></div>
+                                <div class="form-group"><label>VT (L)</label><input type="number" id="vt" value="0.50" step="0.1" min="0"></div>
+                                <div class="form-group"><label>RV/TLC (%)</label><input type="number" id="rvtlc" value="35" step="0.1" min="0" max="100"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- DIFUSIÓN PULMONAR COMPLETA -->
-                    <div class="collapsible-section">
+                    <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
-                            <span>🫁 DIFUSIÓN PULMONAR <span class="info-badge">DLCO</span></span>
-                            <span class="toggle-icon">▼</span>
+                            <span>🫁 DIFUSIÓN PULMONAR <span class="badge">DLCO</span></span>
+                            <span class="toggle-arrow">▼</span>
                         </div>
                         <div class="section-content">
                             <div class="form-grid">
-                                <div class="form-group">
-                                    <label>DLCO (mL/min/mmHg)</label>
-                                    <input type="number" id="dlco" value="15.0" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>VA (L) - Vol. Alveolar</label>
-                                    <input type="number" id="va" value="5.20" step="0.1" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>Hemoglobina (g/dL)</label>
-                                    <input type="number" id="hb" value="14.0" step="0.1" min="5" max="20">
-                                </div>
-                                <div class="form-group">
-                                    <label>COHb (%) - Carboxihemoglobina</label>
-                                    <input type="number" id="cohb" value="1.0" step="0.1" min="0" max="10">
-                                </div>
+                                <div class="form-group"><label>DLCO (mL/min/mmHg)</label><input type="number" id="dlco" value="15.0" step="0.1" min="0"></div>
+                                <div class="form-group"><label>VA (L)</label><input type="number" id="va" value="5.20" step="0.1" min="0"></div>
+                                <div class="form-group"><label>Hemoglobina (g/dL)</label><input type="number" id="hb" value="14.0" step="0.1" min="5" max="20"></div>
+                                <div class="form-group"><label>COHb (%)</label><input type="number" id="cohb" value="1.0" step="0.1" min="0" max="10"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- FUERZA MUSCULAR RESPIRATORIA -->
-                    <div class="collapsible-section">
+                    <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
-                            <span>💪 FUERZA MUSCULAR RESPIRATORIA</span>
-                            <span class="toggle-icon">▼</span>
+                            <span>💪 FUERZA MUSCULAR</span>
+                            <span class="toggle-arrow">▼</span>
                         </div>
                         <div class="section-content">
                             <div class="form-grid">
-                                <div class="form-group">
-                                    <label>PIMáx (cmH₂O) - Presión Inspiratoria</label>
-                                    <input type="number" id="pimax" value="-80" min="-300">
-                                </div>
-                                <div class="form-group">
-                                    <label>PEMáx (cmH₂O) - Presión Espiratoria</label>
-                                    <input type="number" id="pemax" value="120" min="0" max="300">
-                                </div>
+                                <div class="form-group"><label>PIMáx (cmH₂O)</label><input type="number" id="pimax" value="-80" min="-300"></div>
+                                <div class="form-group"><label>PEMáx (cmH₂O)</label><input type="number" id="pemax" value="120" min="0" max="300"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- ÓXIDO NÍTRICO EXHALADO -->
-                    <div class="collapsible-section">
+                    <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
-                            <span>😤 FeNO (ÓXIDO NÍTRICO EXHALADO)</span>
-                            <span class="toggle-icon">▼</span>
+                            <span>😤 FeNO</span>
+                            <span class="toggle-arrow">▼</span>
                         </div>
                         <div class="section-content">
-                            <div class="form-grid single">
-                                <div class="form-group">
-                                    <label>FeNO (ppb) - Referencia <25 ppb</label>
-                                    <input type="number" id="feno" value="35" step="1" min="0" max="200">
-                                </div>
+                            <div class="form-grid full">
+                                <div class="form-group"><label>FeNO (ppb)</label><input type="number" id="feno" value="35" step="1" min="0" max="200"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- RESPUESTA BRONCODILATADORA -->
-                    <div class="collapsible-section">
+                    <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
                             <span>💨 RESPUESTA BRONCODILATADORA</span>
-                            <span class="toggle-icon">▼</span>
+                            <span class="toggle-arrow">▼</span>
                         </div>
                         <div class="section-content">
                             <div class="form-grid">
-                                <div class="form-group">
-                                    <label>FEV1 Pre-BD (L)</label>
-                                    <input type="number" id="fev1_pre" value="2.10" step="0.01" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>FEV1 Post-BD (L)</label>
-                                    <input type="number" id="fev1_post" value="2.34" step="0.01" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>FVC Pre-BD (L)</label>
-                                    <input type="number" id="fvc_pre" value="4.20" step="0.01" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>FVC Post-BD (L)</label>
-                                    <input type="number" id="fvc_post" value="4.45" step="0.01" min="0">
-                                </div>
+                                <div class="form-group"><label>FEV1 Pre-BD (L)</label><input type="number" id="fev1_pre" value="2.10" step="0.01" min="0"></div>
+                                <div class="form-group"><label>FEV1 Post-BD (L)</label><input type="number" id="fev1_post" value="2.34" step="0.01" min="0"></div>
+                                <div class="form-group"><label>FVC Pre-BD (L)</label><input type="number" id="fvc_pre" value="4.20" step="0.01" min="0"></div>
+                                <div class="form-group"><label>FVC Post-BD (L)</label><input type="number" id="fvc_post" value="4.45" step="0.01" min="0"></div>
                             </div>
                         </div>
                     </div>
@@ -578,12 +489,12 @@
                 </div>
             </div>
             
-            <!-- PANEL DE RESULTADOS -->
-            <div class="output-panel">
+            <!-- PANEL DERECHO -->
+            <div class="panel">
                 <div class="panel-header">📊 RESULTADOS E INTERPRETACIÓN</div>
-                <div class="panel-content scrollbar" id="resultados">
+                <div class="panel-body" id="resultados">
                     <p style="text-align: center; color: #999; padding: 40px 0;">
-                        Ingresa los datos y haz clic en ANALIZAR para ver los resultados completos
+                        Haz clic en ANALIZAR para ver resultados
                     </p>
                 </div>
             </div>
@@ -591,496 +502,233 @@
     </div>
     
     <script>
-        // ECUACIONES GLI 2012 - VALORES PREDICHOS
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('.toggle-arrow');
+            content.classList.toggle('show');
+            arrow.classList.toggle('open');
+        }
+        
         function calcularGLI2012(edad, sexo, altura) {
-            const h = altura / 100; // altura en metros
-            const h2 = h * h;
-            const h3 = h2 * h;
-            
-            let predichos = {};
+            const h = altura / 100;
+            let pred = {};
             
             if (sexo === 'M') {
-                predichos.fev1 = Math.exp(0.0151 * Math.log(edad) - 0.0227 * (edad / 100) - 3.6871 + 0.5655 * Math.log(h)) * 1000;
-                predichos.fvc = Math.exp(0.0122 * Math.log(edad) - 0.0206 * (edad / 100) - 3.4322 + 0.4529 * Math.log(h)) * 1000;
-                predichos.fef = Math.exp(-0.0257 * Math.log(edad) + 0.0321 * (edad / 100) - 3.1331 + 0.4355 * Math.log(h));
-                predichos.pef = Math.exp(-0.0178 * Math.log(edad) - 0.0062 * (edad / 100) + 0.3130 + 0.5971 * Math.log(h));
-                predichos.tlc = Math.exp(0.0151 * Math.log(edad) - 0.0227 * (edad / 100) - 3.1315 + 0.5571 * Math.log(h)) * 1000;
-                predichos.dlco = 10.2 + 0.086 * altura - 0.2167 * edad;
+                pred.fev1 = 0.0414 * altura - 0.0244 * edad - 2.19;
+                pred.fvc = 0.0600 * altura - 0.0214 * edad - 4.90;
+                pred.tlc = 0.0844 * altura - 0.0271 * edad - 7.99;
+                pred.dlco = 10.2 + 0.086 * altura - 0.2167 * edad;
             } else {
-                predichos.fev1 = Math.exp(0.0151 * Math.log(edad) - 0.0227 * (edad / 100) - 3.9625 + 0.4894 * Math.log(h)) * 1000;
-                predichos.fvc = Math.exp(0.0122 * Math.log(edad) - 0.0206 * (edad / 100) - 3.7322 + 0.3932 * Math.log(h)) * 1000;
-                predichos.fef = Math.exp(-0.0257 * Math.log(edad) + 0.0321 * (edad / 100) - 3.5814 + 0.3722 * Math.log(h));
-                predichos.pef = Math.exp(-0.0178 * Math.log(edad) - 0.0062 * (edad / 100) - 0.0455 + 0.4435 * Math.log(h));
-                predichos.tlc = Math.exp(0.0151 * Math.log(edad) - 0.0227 * (edad / 100) - 3.6765 + 0.4897 * Math.log(h)) * 1000;
-                predichos.dlco = 8.52 + 0.071 * altura - 0.1714 * edad;
+                pred.fev1 = 0.0342 * altura - 0.0255 * edad - 1.578;
+                pred.fvc = 0.0491 * altura - 0.0216 * edad - 3.59;
+                pred.tlc = 0.0649 * altura - 0.0214 * edad - 3.77;
+                pred.dlco = 8.52 + 0.071 * altura - 0.1714 * edad;
             }
             
-            predichos.rv = predichos.tlc * 0.35;
-            predichos.ic = predichos.tlc * 0.35;
-            predichos.frc = predichos.tlc * 0.40;
-            predichos.erv = predichos.tlc * 0.25;
-            
-            return predichos;
+            return pred;
         }
         
         function calcularPIMPredicho(edad, sexo) {
-            if (sexo === 'M') {
-                return -(104 + 1.4 * edad);
-            } else {
-                return -(71 + 0.5 * edad);
-            }
+            return sexo === 'M' ? -(104 + 1.4 * edad) : -(71 + 0.5 * edad);
         }
         
         function calcularPEMPredicho(edad, sexo) {
-            if (sexo === 'M') {
-                return 141 - 0.5 * edad;
-            } else {
-                return 103 - 0.3 * edad;
-            }
+            return sexo === 'M' ? 141 - 0.5 * edad : 103 - 0.3 * edad;
         }
         
-        function toggleSection(header) {
-            const content = header.nextElementSibling;
-            const icon = header.querySelector('.toggle-icon');
-            
-            content.classList.toggle('active');
-            icon.classList.toggle('active');
-        }
-        
-        function clasificarSeveridad(porcentaje) {
-            if (porcentaje >= 80) return 'NORMAL';
-            if (porcentaje >= 70) return 'LEVE';
-            if (porcentaje >= 60) return 'MODERADO';
-            if (porcentaje >= 50) return 'MODERADO-SEVERO';
+        function getSeveridad(pct) {
+            if (pct >= 80) return 'NORMAL';
+            if (pct >= 70) return 'LEVE';
+            if (pct >= 60) return 'MODERADO';
+            if (pct >= 50) return 'MOD-SEV';
             return 'SEVERO';
         }
         
-        function getClaseResultado(porcentaje) {
-            if (porcentaje >= 80) return 'severity-normal';
-            if (porcentaje >= 70) return 'severity-leve';
-            if (porcentaje >= 60) return 'severity-moderado';
+        function getClase(pct) {
+            if (pct >= 80) return 'severity-normal';
+            if (pct >= 70) return 'severity-leve';
+            if (pct >= 60) return 'severity-moderado';
             return 'severity-severo';
         }
         
-        function analizarPatronEspirometrico(fev1, fvc, fev1Pred, fvcPred, tlcPred, tlc) {
-            const ratio = (fev1 / fvc) * 100;
-            const fev1Pct = (fev1 / fev1Pred) * 100;
-            const fvcPct = (fvc / fvcPred) * 100;
-            const tlcPct = (tlc / tlcPred) * 100;
-            
-            let patron = 'NORMAL';
-            let descripcion = '';
-            
-            // Criterios GOLD 2023
-            if (ratio < 70) {
-                // OBSTRUCTIVO
-                if (fev1Pct >= 80) patron = 'OBSTRUCTIVO LEVE (GOLD 1)';
-                else if (fev1Pct >= 50) patron = 'OBSTRUCTIVO MODERADO (GOLD 2)';
-                else if (fev1Pct >= 30) patron = 'OBSTRUCTIVO SEVERO (GOLD 3)';
-                else patron = 'OBSTRUCTIVO MUY SEVERO (GOLD 4)';
-                
-                descripcion = `Relación FEV1/FVC ${ratio.toFixed(1)}% <70% confirma obstrucción. FEV1 ${fev1Pct.toFixed(1)}% predicho.`;
-            } else if (ratio >= 70 && fvcPct < 80 && tlcPct < 80) {
-                patron = 'RESTRICTIVO';
-                descripcion = `FEV1/FVC normal (${ratio.toFixed(1)}%) pero FVC reducida (${fvcPct.toFixed(1)}% pred) y TLC <80% (${tlcPct.toFixed(1)}%).`;
-            } else if (ratio < 70 && fvcPct < 80 && tlcPct < 80) {
-                patron = 'PATRÓN MIXTO';
-                descripcion = `Obstrucción (FEV1/FVC ${ratio.toFixed(1)}%) con componente restrictivo (TLC ${tlcPct.toFixed(1)}%).`;
-            }
-            
-            return { patron, descripcion, ratio, fev1Pct, fvcPct };
-        }
-        
-        function analizarCompleto() {
-            // Obtener valores
-            const edad = parseInt(document.getElementById('edad').value);
-            const sexo = document.getElementById('sexo').value;
-            const altura = parseInt(document.getElementById('altura').value);
-            
-            // Espirometría
-            const fev1 = parseFloat(document.getElementById('fev1').value);
-            const fvc = parseFloat(document.getElementById('fvc').value);
-            const fev6 = parseFloat(document.getElementById('fev6').value);
-            const fef = parseFloat(document.getElementById('fef').value);
-            const pef = parseFloat(document.getElementById('pef').value);
-            const fiv1 = parseFloat(document.getElementById('fiv1').value);
-            const fic = parseFloat(document.getElementById('fic').value);
-            const svc = parseFloat(document.getElementById('svc').value);
-            const fivc = parseFloat(document.getElementById('fivc').value);
-            const mvv = parseFloat(document.getElementById('mvv').value);
-            
-            // Volúmenes
-            const tlc = parseFloat(document.getElementById('tlc').value);
-            const rv = parseFloat(document.getElementById('rv').value);
-            const frc = parseFloat(document.getElementById('frc').value);
-            const ic = parseFloat(document.getElementById('ic').value);
-            const erv = parseFloat(document.getElementById('erv').value);
-            const vc = parseFloat(document.getElementById('vc').value);
-            const vt = parseFloat(document.getElementById('vt').value);
-            const rvtlc = parseFloat(document.getElementById('rvtlc').value);
-            
-            // DLCO
-            const dlco = parseFloat(document.getElementById('dlco').value);
-            const va = parseFloat(document.getElementById('va').value);
-            const hb = parseFloat(document.getElementById('hb').value);
-            const cohb = parseFloat(document.getElementById('cohb').value);
-            
-            // Fuerza muscular
-            const pimax = parseFloat(document.getElementById('pimax').value);
-            const pemax = parseFloat(document.getElementById('pemax').value);
-            
-            // FeNO
-            const feno = parseFloat(document.getElementById('feno').value);
-            
-            // Broncodilatador
-            const fev1_pre = parseFloat(document.getElementById('fev1_pre').value);
-            const fev1_post = parseFloat(document.getElementById('fev1_post').value);
-            const fvc_pre = parseFloat(document.getElementById('fvc_pre').value);
-            const fvc_post = parseFloat(document.getElementById('fvc_post').value);
-            
-            // Calcular predichos GLI 2012
+        function generarInterpretacionIntegral(edad, sexo, altura, fev1, fvc, tlc, rv, dlco, va, pimax, pemax, feno, fev1_pre, fev1_post) {
             const pred = calcularGLI2012(edad, sexo, altura);
             
-            // Calcular porcentajes predichos
             const fev1Pct = (fev1 / pred.fev1) * 100;
             const fvcPct = (fvc / pred.fvc) * 100;
-            const fefPct = (fef / pred.fef) * 100;
-            const pefPct = (pef / pred.pef) * 100;
             const tlcPct = (tlc / pred.tlc) * 100;
-            const rvPct = (rv / pred.rv) * 100;
+            const rvPct = (rv / (pred.tlc * 0.35)) * 100;
             const dlcoPct = (dlco / pred.dlco) * 100;
             const kco = va > 0 ? dlco / va : 0;
-            const kcoPred = pred.dlco / (pred.tlc * 0.85);
-            const kcoPct = (kco / kcoPred) * 100;
+            const kcoPct = (kco / (pred.dlco / (pred.tlc * 0.85))) * 100;
             
-            // Fuerza muscular
             const pimaxPred = calcularPIMPredicho(edad, sexo);
             const pemaxPred = calcularPEMPredicho(edad, sexo);
             const pimaxPct = (Math.abs(pimax) / Math.abs(pimaxPred)) * 100;
             const pemaxPct = (pemax / pemaxPred) * 100;
             
-            // Respuesta broncodilatadora
-            const deltaFev1 = fev1_post - fev1_pre;
-            const deltaFev1Pct = (deltaFev1 / fev1_pre) * 100;
-            const respuestaBD = deltaFev1 >= 0.12 && deltaFev1Pct >= 12 ? 'POSITIVA SIGNIFICATIVA' : deltaFev1 >= 0.10 || deltaFev1Pct >= 10 ? 'POSITIVA' : 'NO SIGNIFICATIVA';
+            const ratio = (fev1 / fvc) * 100;
             
-            // Análisis del patrón
-            const patron = analizarPatronEspirometrico(fev1, fvc, pred.fev1, pred.fvc, pred.tlc, tlc);
+            let patron = 'NORMAL';
+            let interpretacionPatron = 'Función pulmonar normal.';
+            let mecanismo = '';
+            let correlaciones = '';
+            let recomendaciones = '';
             
-            // Generar HTML de resultados
+            if (ratio < 70) {
+                patron = 'PATRÓN OBSTRUCTIVO';
+                interpretacionPatron = `Obstrucción de la vía aérea confirmada por FEV1/FVC ${ratio.toFixed(1)}% <70%. `;
+                
+                if (fev1Pct >= 80) {
+                    patron += ' (GOLD 1 - LEVE)';
+                    interpretacionPatron += `Severidad leve (FEV1 ${fev1Pct.toFixed(1)}% predicho).`;
+                } else if (fev1Pct >= 50) {
+                    patron += ' (GOLD 2 - MODERADO)';
+                    interpretacionPatron += `Severidad moderada (FEV1 ${fev1Pct.toFixed(1)}% predicho).`;
+                } else if (fev1Pct >= 30) {
+                    patron += ' (GOLD 3 - SEVERO)';
+                    interpretacionPatron += `Severidad severa (FEV1 ${fev1Pct.toFixed(1)}% predicho).`;
+                } else {
+                    patron += ' (GOLD 4 - MUY SEVERO)';
+                    interpretacionPatron += `Severidad muy severa (FEV1 ${fev1Pct.toFixed(1)}% predicho).`;
+                }
+                
+                if (rvPct > 130) {
+                    mecanismo = 'Atrapamiento aéreo severo con hiperinflación importante. ';
+                } else if (rvPct > 110) {
+                    mecanismo = 'Atrapamiento aéreo presente con aumento de volúmenes dinámicos. ';
+                }
+                
+                if (dlcoPct < 80 && kcoPct < 80) {
+                    correlaciones = 'DLCO disminuido sugiere afectación parenquimatosa asociada (enfisema).';
+                } else if (dlcoPct >= 80) {
+                    correlaciones = 'DLCO normal sugiere enfermedad de vía aérea sin compromiso parenquimatoso importante.';
+                }
+            } else if (fvcPct < 80 && tlcPct < 80) {
+                patron = 'PATRÓN RESTRICTIVO';
+                interpretacionPatron = `Restricción pulmonar confirmada por TLC ${tlcPct.toFixed(1)}% predicho (<80%) con FEV1/FVC normal o elevado (${ratio.toFixed(1)}%).`;
+                mecanismo = `Disminución de volúmenes pulmonares. Capacidad vital reducida sugerente de fibrosis pulmonar, restricción neuromuscular o parietal.`;
+                
+                if (dlcoPct < 80) {
+                    correlaciones = 'DLCO disminuido sugiere enfermedad intersticial pulmonar (fibrosis).';
+                } else {
+                    correlaciones = 'DLCO preservado sugiere restricción no parenquimatosa (neuromuscular, parietal).';
+                }
+            } else if (ratio < 70 && tlcPct < 80) {
+                patron = 'PATRÓN MIXTO';
+                interpretacionPatron = `Combinación de obstrucción (FEV1/FVC ${ratio.toFixed(1)}%) y restricción (TLC ${tlcPct.toFixed(1)}%). Patrón complejo que requiere correlación clínica.`;
+                mecanismo = 'Afectación tanto de vía aérea como de parénquima/volúmenes pulmonares.';
+            }
+            
+            // Generación de texto de interpretación integral
+            let interpretacionIntegral = `
+                <div class="interpretation-section">
+                    <div class="section-label">📋 RESUMEN CLÍNICO DEL PATRÓN FUNCIONAL:</div>
+                    <p>${interpretacionPatron}</p>
+                </div>
+                
+                <div class="interpretation-section">
+                    <div class="section-label">🔍 MECANISMO FISIOPATOLÓGICO:</div>
+                    <p>${mecanismo}. Relación FEV1/FVC ${ratio.toFixed(1)}%, indicador de limitación del flujo aéreo en caso de ser <70%.</p>
+                </div>
+                
+                <div class="interpretation-section">
+                    <div class="section-label">🔗 CORRELACIONES ENTRE PARÁMETROS:</div>
+                    <p><strong>Espirometría - Volúmenes:</strong> ${tlcPct > 120 ? 'Hiperinflación dinámica presente.' : tlcPct < 80 ? 'Restricción de volúmenes confirmada.' : 'Volúmenes normales.'}</p>
+                    <p><strong>Difusión (DLCO/KCO):</strong> ${dlcoPct < 80 ? `DLCO disminuido (${dlcoPct.toFixed(1)}% predicho) ${kcoPct < 80 ? 'con KCO bajo sugiere enfermedad parenquimatosa.' : 'con KCO normal sugiere hiperflacinación.'}` : `DLCO normal (${dlcoPct.toFixed(1)}% predicho) - función alveolo-capilar preservada.`}</p>
+                    <p><strong>Fuerza Muscular:</strong> ${pimaxPct >= 80 && pemaxPct >= 80 ? 'Fuerza muscular respiratoria normal.' : `Debilidad muscular respiratoria ${pimaxPct < 80 ? '(inspiratoria)' : ''} ${pemaxPct < 80 ? '(espiratoria)' : ''}.`}</p>
+                </div>
+                
+                <div class="interpretation-section">
+                    <div class="section-label">💡 INTERPRETACIÓN DE HALLAZGOS ADICIONALES:</div>
+                    <p><strong>FeNO (${feno} ppb):</strong> ${feno < 25 ? 'Nivel normal - bajo riesgo de inflamación eosinófila.' : feno < 40 ? 'Elevado - sugiere inflamación eosinófila de vía aérea compatible con asma o EPOC con componente alérgico.' : 'Muy elevado - evidencia fuerte de inflamación eosinófila.'}}</p>
+                    <p><strong>Respuesta Broncodilatadora:</strong> ${Math.abs(fev1_post - fev1_pre) >= 0.12 && (fev1_post - fev1_pre)/fev1_pre*100 >= 12 ? 'REVERSIBILIDAD SIGNIFICATIVA - Sugiere asma o EPOC con componente reversible.' : 'Respuesta no significativa - Obstrucción más fija, sugiere enfisema puro o destrucción irreversible.'}</p>
+                </div>
+                
+                <div class="interpretation-section">
+                    <div class="section-label">⚕️ POSIBLES DIAGNÓSTICOS DIFERENCIALES:</div>
+                    <p>
+                        ${patron.includes('OBSTRUCTIVO') ? `<strong>Patrón obstructivo:</strong> EPOC, asma, bronquiectasias, fibrosis quística.<br>` : ''}
+                        ${patron.includes('RESTRICTIVO') ? `<strong>Patrón restrictivo:</strong> Fibrosis pulmonar, neumonitis, restricción neuromuscular (miastenia, ELA, distrofias).<br>` : ''}
+                        ${pimaxPct < 70 || pemaxPct < 70 ? `<strong>Debilidad muscular:</strong> Considerar miastenia gravis, distrofia muscular, polirradiculopatía inflamatoria.` : ''}
+                    </p>
+                </div>
+                
+                <div class="recommendation-box">
+                    <strong>🔬 RECOMENDACIONES CLÍNICAS:</strong><br><br>
+                    ✓ Correlacionar siempre con síntomas clínicos, antecedentes de exposición laboral/ambiental y tabaquismo.<br>
+                    ✓ Considerar tests complementarios (tomografía, gasometría arterial, pruebas alérgicas).<br>
+                    ✓ Evaluar indicación de broncodilatadores/corticosteroides según patrón encontrado.<br>
+                    ✓ Realizar seguimiento con PFR seriada para evaluar progresión o respuesta a tratamiento.<br>
+                    ✓ FeNO elevado sugiere considerar terapia antiinflamatoria específica.<br>
+                    ✓ Si hay reversibilidad, evaluar respuesta a prueba terapéutica broncodilatadora.
+                </div>
+            `;
+            
+            return { interpretacionIntegral, patron, ratio, fev1Pct, fvcPct, tlcPct, dlcoPct, kcoPct, pimaxPct, pemaxPct, kco };
+        }
+        
+        function analizarCompleto() {
+            const edad = parseInt(document.getElementById('edad').value);
+            const sexo = document.getElementById('sexo').value;
+            const altura = parseInt(document.getElementById('altura').value);
+            
+            const fev1 = parseFloat(document.getElementById('fev1').value);
+            const fvc = parseFloat(document.getElementById('fvc').value);
+            const fev6 = parseFloat(document.getElementById('fev6').value);
+            const fef = parseFloat(document.getElementById('fef').value);
+            const pef = parseFloat(document.getElementById('pef').value);
+            const tlc = parseFloat(document.getElementById('tlc').value);
+            const rv = parseFloat(document.getElementById('rv').value);
+            const dlco = parseFloat(document.getElementById('dlco').value);
+            const va = parseFloat(document.getElementById('va').value);
+            const pimax = parseFloat(document.getElementById('pimax').value);
+            const pemax = parseFloat(document.getElementById('pemax').value);
+            const feno = parseFloat(document.getElementById('feno').value);
+            const fev1_pre = parseFloat(document.getElementById('fev1_pre').value);
+            const fev1_post = parseFloat(document.getElementById('fev1_post').value);
+            
+            const analisis = generarInterpretacionIntegral(edad, sexo, altura, fev1, fvc, tlc, rv, dlco, va, pimax, pemax, feno, fev1_pre, fev1_post);
+            
+            const pred = calcularGLI2012(edad, sexo, altura);
+            const fev1Pct = (fev1 / pred.fev1) * 100;
+            const fvcPct = (fvc / pred.fvc) * 100;
+            const dlcoPct = (dlco / pred.dlco) * 100;
+            
             let html = `
                 <div class="pattern-box">
-                    <div class="pattern-title">🔍 ${patron.patron}</div>
-                    <div class="pattern-description">${patron.descripcion}</div>
+                    <div class="pattern-title">🔍 ${analisis.patron}</div>
+                    <div>FEV1/FVC: ${analisis.ratio.toFixed(1)}% | FEV1: ${analisis.fev1Pct.toFixed(1)}%</div>
                 </div>
                 
-                <div class="result-block">
+                <div class="result-item">
                     <div class="result-title">📈 ESPIROMETRÍA DINÁMICA</div>
                     <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>Parámetro</th>
-                                <th>Medido</th>
-                                <th>Predicho (GLI 2012)</th>
-                                <th>% Pred</th>
-                                <th>Severidad</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Parámetro</th><th>Medido</th><th>Predicho</th><th>%</th></tr></thead>
                         <tbody>
-                            <tr>
-                                <td><strong>FEV1 (L)</strong></td>
-                                <td>${fev1.toFixed(2)}</td>
-                                <td>${pred.fev1.toFixed(2)}</td>
-                                <td><strong>${fev1Pct.toFixed(1)}</strong></td>
-                                <td><span class="${getClaseResultado(fev1Pct)}">${clasificarSeveridad(fev1Pct)}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>FVC (L)</strong></td>
-                                <td>${fvc.toFixed(2)}</td>
-                                <td>${pred.fvc.toFixed(2)}</td>
-                                <td><strong>${fvcPct.toFixed(1)}</strong></td>
-                                <td><span class="${getClaseResultado(fvcPct)}">${clasificarSeveridad(fvcPct)}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>FEV1/FVC (%)</strong></td>
-                                <td colspan="2"><strong>${patron.ratio.toFixed(1)}</strong></td>
-                                <td colspan="2">${patron.ratio < 70 ? '<span class="severity-severo">ANORMAL (&lt;70%)</span>' : '<span class="severity-normal">NORMAL (≥70%)</span>'}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>FEF25-75% (L/s)</strong></td>
-                                <td>${fef.toFixed(2)}</td>
-                                <td>${pred.fef.toFixed(2)}</td>
-                                <td><strong>${fefPct.toFixed(1)}</strong></td>
-                                <td><span class="${getClaseResultado(fefPct)}">${clasificarSeveridad(fefPct)}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>PEF (L/s)</strong></td>
-                                <td>${pef.toFixed(2)}</td>
-                                <td>${pred.pef.toFixed(2)}</td>
-                                <td><strong>${pefPct.toFixed(1)}</strong></td>
-                                <td><span class="${getClaseResultado(pefPct)}">${clasificarSeveridad(pefPct)}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>FIV1 (L)</strong></td>
-                                <td>${fiv1.toFixed(2)}</td>
-                                <td>${(pred.fev1 * 0.9).toFixed(2)}</td>
-                                <td><strong>${((fiv1 / (pred.fev1 * 0.9)) * 100).toFixed(1)}</strong></td>
-                                <td><span class="${getClaseResultado((fiv1 / (pred.fev1 * 0.9)) * 100)}">${clasificarSeveridad((fiv1 / (pred.fev1 * 0.9)) * 100)}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>FIC (L)</strong></td>
-                                <td>${fic.toFixed(2)}</td>
-                                <td>${(pred.tlc * 0.35).toFixed(2)}</td>
-                                <td><strong>${((fic / (pred.tlc * 0.35)) * 100).toFixed(1)}</strong></td>
-                                <td><span class="${getClaseResultado((fic / (pred.tlc * 0.35)) * 100)}">${clasificarSeveridad((fic / (pred.tlc * 0.35)) * 100)}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>FEV6 (L)</strong></td>
-                                <td>${fev6.toFixed(2)}</td>
-                                <td>—</td>
-                                <td colspan="2">Alternativa a FVC en mayores de 70 años</td>
-                            </tr>
-                            <tr>
-                                <td><strong>SVC (L)</strong></td>
-                                <td>${svc.toFixed(2)}</td>
-                                <td>${pred.fvc.toFixed(2)}</td>
-                                <td><strong>${((svc / pred.fvc) * 100).toFixed(1)}</strong></td>
-                                <td>Maniobra suave</td>
-                            </tr>
-                            <tr>
-                                <td><strong>MVV (L/min)</strong></td>
-                                <td>${mvv.toFixed(0)}</td>
-                                <td>${(fev1 * 35).toFixed(0)}</td>
-                                <td><strong>${((mvv / (fev1 * 35)) * 100).toFixed(1)}</strong></td>
-                                <td>Ventilación máxima</td>
-                            </tr>
+                            <tr><td><b>FEV1</b></td><td>${fev1.toFixed(2)}</td><td>${pred.fev1.toFixed(2)}</td><td><span class="${getClase(fev1Pct)}">${fev1Pct.toFixed(1)}%</span></td></tr>
+                            <tr><td><b>FVC</b></td><td>${fvc.toFixed(2)}</td><td>${pred.fvc.toFixed(2)}</td><td><span class="${getClase(fvcPct)}">${fvcPct.toFixed(1)}%</span></td></tr>
+                            <tr><td><b>FEV1/FVC</b></td><td colspan="2">${analisis.ratio.toFixed(1)}%</td><td>${analisis.ratio < 70 ? '<span class="severity-severo">OBST</span>' : '<span class="severity-normal">NORMAL</span>'}</td></tr>
                         </tbody>
                     </table>
                 </div>
                 
-                <div class="result-block">
-                    <div class="result-title">📊 VOLÚMENES PULMONARES</div>
+                <div class="result-item">
+                    <div class="result-title">📊 DIFUSIÓN (DLCO/KCO)</div>
                     <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>Parámetro</th>
-                                <th>Medido</th>
-                                <th>Predicho</th>
-                                <th>% Pred</th>
-                                <th>Interpretación</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Parámetro</th><th>Valor</th><th>% Predicho</th></tr></thead>
                         <tbody>
-                            <tr>
-                                <td><strong>TLC (L)</strong></td>
-                                <td>${tlc.toFixed(2)}</td>
-                                <td>${pred.tlc.toFixed(2)}</td>
-                                <td><strong>${tlcPct.toFixed(1)}</strong></td>
-                                <td><span class="${tlcPct > 120 ? 'severity-severo' : tlcPct < 80 ? 'severity-moderado' : 'severity-normal'}">${tlcPct > 120 ? 'HIPERINFLACIÓN' : tlcPct < 80 ? 'RESTRICCIÓN' : 'NORMAL'}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>RV (L)</strong></td>
-                                <td>${rv.toFixed(2)}</td>
-                                <td>${pred.rv.toFixed(2)}</td>
-                                <td><strong>${rvPct.toFixed(1)}</strong></td>
-                                <td><span class="${rvPct > 130 ? 'severity-severo' : rvPct > 110 ? 'severity-moderado' : 'severity-normal'}">${rvPct > 130 ? 'ATRAPAMIENTO SEVERO' : rvPct > 110 ? 'ATRAPAMIENTO MODERADO' : 'NORMAL'}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>FRC (L)</strong></td>
-                                <td>${frc.toFixed(2)}</td>
-                                <td>${pred.frc.toFixed(2)}</td>
-                                <td><strong>${((frc / pred.frc) * 100).toFixed(1)}</strong></td>
-                                <td>Capacidad Residual Funcional</td>
-                            </tr>
-                            <tr>
-                                <td><strong>IC (L)</strong></td>
-                                <td>${ic.toFixed(2)}</td>
-                                <td>${pred.ic.toFixed(2)}</td>
-                                <td><strong>${((ic / pred.ic) * 100).toFixed(1)}</strong></td>
-                                <td>Capacidad Inspiratoria</td>
-                            </tr>
-                            <tr>
-                                <td><strong>ERV (L)</strong></td>
-                                <td>${erv.toFixed(2)}</td>
-                                <td>${pred.erv.toFixed(2)}</td>
-                                <td><strong>${((erv / pred.erv) * 100).toFixed(1)}</strong></td>
-                                <td>Volumen Espiratorio Reserva</td>
-                            </tr>
-                            <tr>
-                                <td><strong>VC (L)</strong></td>
-                                <td>${vc.toFixed(2)}</td>
-                                <td>${pred.fvc.toFixed(2)}</td>
-                                <td><strong>${((vc / pred.fvc) * 100).toFixed(1)}</strong></td>
-                                <td>Capacidad Vital (IC+ERV)</td>
-                            </tr>
-                            <tr>
-                                <td><strong>VT (L)</strong></td>
-                                <td>${vt.toFixed(2)}</td>
-                                <td>0.4-0.6</td>
-                                <td>—</td>
-                                <td>Volumen Tidal en reposo</td>
-                            </tr>
-                            <tr>
-                                <td><strong>RV/TLC (%)</strong></td>
-                                <td>${rvtlc.toFixed(1)}</td>
-                                <td>&lt;35%</td>
-                                <td colspan="2"><span class="${rvtlc > 45 ? 'severity-severo' : rvtlc > 35 ? 'severity-moderado' : 'severity-normal'}">${rvtlc > 45 ? 'ATRAPAMIENTO SEVERO' : rvtlc > 35 ? 'ATRAPAMIENTO' : 'NORMAL'}</span></td>
-                            </tr>
+                            <tr><td><b>DLCO</b></td><td>${dlco.toFixed(1)}</td><td><span class="${getClase(dlcoPct)}">${dlcoPct.toFixed(1)}%</span></td></tr>
+                            <tr><td><b>KCO</b></td><td>${analisis.kco.toFixed(2)}</td><td><span class="${getClase(analisis.kcoPct)}">${analisis.kcoPct.toFixed(1)}%</span></td></tr>
                         </tbody>
                     </table>
                 </div>
                 
-                <div class="result-block">
-                    <div class="result-title">🫁 DIFUSIÓN PULMONAR (DLCO)</div>
-                    <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>Parámetro</th>
-                                <th>Medido</th>
-                                <th>Predicho (GLI)</th>
-                                <th>% Pred</th>
-                                <th>Interpretación</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>DLCO (mL/min/mmHg)</strong></td>
-                                <td>${dlco.toFixed(1)}</td>
-                                <td>${pred.dlco.toFixed(1)}</td>
-                                <td><strong>${dlcoPct.toFixed(1)}</strong></td>
-                                <td><span class="${dlcoPct < 80 ? 'severity-moderado' : 'severity-normal'}">${dlcoPct < 80 ? 'DISMINUIDA' : 'NORMAL'}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>VA (L)</strong></td>
-                                <td>${va.toFixed(2)}</td>
-                                <td>${(pred.tlc * 0.85).toFixed(2)}</td>
-                                <td><strong>${((va / (pred.tlc * 0.85)) * 100).toFixed(1)}</strong></td>
-                                <td>Volumen Alveolar</td>
-                            </tr>
-                            <tr>
-                                <td><strong>KCO (DLCO/VA)</strong></td>
-                                <td>${kco.toFixed(2)}</td>
-                                <td>${kcoPred.toFixed(2)}</td>
-                                <td><strong>${kcoPct.toFixed(1)}</strong></td>
-                                <td><span class="${kcoPct < 80 ? 'severity-leve' : 'severity-normal'}">${kcoPct < 80 ? 'DISMINUIDO' : 'NORMAL'}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Hemoglobina (g/dL)</strong></td>
-                                <td>${hb.toFixed(1)}</td>
-                                <td>13.5-17.5 (H), 12-15.5 (M)</td>
-                                <td>—</td>
-                                <td>${hb < 12 || hb > 18 ? '<span class="severity-moderado">Requiere ajuste DLCO</span>' : 'Normal'}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>COHb (%)</strong></td>
-                                <td>${cohb.toFixed(1)}</td>
-                                <td>&lt;2-3%</td>
-                                <td>—</td>
-                                <td>${cohb > 3 ? '<span class="severity-leve">Elevada</span>' : 'Aceptable'}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="result-block">
-                    <div class="result-title">💪 FUERZA MUSCULAR RESPIRATORIA</div>
-                    <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>Parámetro</th>
-                                <th>Medido</th>
-                                <th>Predicho</th>
-                                <th>% Pred</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>PIMáx (cmH₂O)</strong></td>
-                                <td>${Math.abs(pimax).toFixed(0)}</td>
-                                <td>${Math.abs(pimaxPred).toFixed(0)}</td>
-                                <td><strong>${pimaxPct.toFixed(1)}</strong></td>
-                                <td><span class="${pimaxPct < 70 ? 'severity-severo' : pimaxPct < 80 ? 'severity-moderado' : 'severity-normal'}">${pimaxPct < 70 ? 'DEBILIDAD INSPIRATORIA' : pimaxPct < 80 ? 'LEVE' : 'NORMAL'}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>PEMáx (cmH₂O)</strong></td>
-                                <td>${pemax.toFixed(0)}</td>
-                                <td>${pemaxPred.toFixed(0)}</td>
-                                <td><strong>${pemaxPct.toFixed(1)}</strong></td>
-                                <td><span class="${pemaxPct < 70 ? 'severity-severo' : pemaxPct < 80 ? 'severity-moderado' : 'severity-normal'}">${pemaxPct < 70 ? 'DEBILIDAD ESPIRATORIA' : pemaxPct < 80 ? 'LEVE' : 'NORMAL'}</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="result-block">
-                    <div class="result-title">😤 FeNO - ÓXIDO NÍTRICO EXHALADO</div>
-                    <div style="padding: 15px; text-align: center;">
-                        <div style="font-size: 32px; font-weight: bold; color: #1e3a5f; margin-bottom: 10px;">${feno} ppb</div>
-                        <div style="margin-bottom: 15px;">
-                            <span class="${feno < 25 ? 'severity-normal' : feno < 40 ? 'severity-leve' : 'severity-severo'}" style="padding: 8px 16px; border-radius: 6px; display: inline-block;">
-                                ${feno < 25 ? 'NORMAL (&lt;25 ppb)' : feno < 40 ? 'ELEVADO (25-40 ppb)' : 'MUY ELEVADO (&gt;40 ppb)'}
-                            </span>
-                        </div>
-                        <p style="font-size: 12px; color: #666;">
-                            ${feno < 25 ? 'Bajo riesgo de inflamación eosinófila. Compatible con control adecuado.' : feno < 40 ? 'Sugiere inflamación eosinófila de vía aérea. Considerar corticosteroides.' : 'Fuerte evidencia de inflamación eosinófila. Requiere terapia antiinflamatoria.'}
-                        </p>
+                <div class="interpretation-box">
+                    <div class="interpretation-title">📖 INTERPRETACIÓN INTEGRAL</div>
+                    <div class="interpretation-content">
+                        ${analisis.interpretacionIntegral}
                     </div>
-                </div>
-                
-                <div class="result-block">
-                    <div class="result-title">💨 RESPUESTA BRONCODILATADORA</div>
-                    <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>Parámetro</th>
-                                <th>Pre-BD</th>
-                                <th>Post-BD</th>
-                                <th>Δ Absoluto</th>
-                                <th>Δ %</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>FEV1 (L)</strong></td>
-                                <td>${fev1_pre.toFixed(2)}</td>
-                                <td>${fev1_post.toFixed(2)}</td>
-                                <td><strong>${deltaFev1.toFixed(3)}</strong></td>
-                                <td><strong>${deltaFev1Pct.toFixed(1)}</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>FVC (L)</strong></td>
-                                <td>${fvc_pre.toFixed(2)}</td>
-                                <td>${fvc_post.toFixed(2)}</td>
-                                <td><strong>${(fvc_post - fvc_pre).toFixed(3)}</strong></td>
-                                <td><strong>${((fvc_post - fvc_pre) / fvc_pre * 100).toFixed(1)}</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div style="margin-top: 15px; padding: 15px; background: ${respuestaBD === 'POSITIVA SIGNIFICATIVA' ? '#dcfce7' : respuestaBD === 'POSITIVA' ? '#fef08a' : '#fecaca'}; border-radius: 6px; text-align: center;">
-                        <div style="font-weight: bold; color: ${respuestaBD === 'POSITIVA SIGNIFICATIVA' ? '#166534' : respuestaBD === 'POSITIVA' ? '#713f12' : '#991b1b'};">
-                            RESPUESTA: ${respuestaBD}
-                        </div>
-                        <p style="font-size: 12px; margin-top: 8px; color: ${respuestaBD === 'POSITIVA SIGNIFICATIVA' ? '#166534' : respuestaBD === 'POSITIVA' ? '#713f12' : '#991b1b'};">
-                            ${respuestaBD === 'POSITIVA SIGNIFICATIVA' ? 'Criterio ATS/ERS cumplido: Δ≥12% Y ≥200 mL' : respuestaBD === 'POSITIVA' ? 'Respuesta discreta: Δ≥10% O ≥200 mL' : 'No cumple criterios de respuesta significativa'}
-                        </p>
-                    </div>
-                </div>
-                
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 3px solid #0ea5e9; padding: 20px; border-radius: 8px; margin-top: 20px;">
-                    <div style="font-size: 16px; font-weight: bold; color: #0369a1; margin-bottom: 12px;">📋 RESUMEN CLÍNICO</div>
-                    <ul style="font-size: 13px; line-height: 1.8; color: #0c4a6e; list-style: none; padding: 0;">
-                        <li>✓ <strong>Patrón Ventilatorio:</strong> ${patron.patron}</li>
-                        <li>✓ <strong>Severidad FEV1:</strong> ${clasificarSeveridad(fev1Pct)} (${fev1Pct.toFixed(1)}% predicho)</li>
-                        <li>✓ <strong>Difusión:</strong> DLCO ${dlcoPct.toFixed(1)}% predicho ${dlcoPct < 80 ? '(DISMINUIDA)' : '(NORMAL)'}</li>
-                        <li>✓ <strong>Volúmenes:</strong> TLC ${tlcPct.toFixed(1)}% predicho ${tlcPct > 120 ? '(Hiperinflación)' : tlcPct < 80 ? '(Restricción)' : '(Normal)'}</li>
-                        <li>✓ <strong>Fuerza Muscular:</strong> PIMáx ${pimaxPct.toFixed(1)}%, PEMáx ${pemaxPct.toFixed(1)}%</li>
-                        <li>✓ <strong>Inflamación:</strong> FeNO ${feno} ppb ${feno > 40 ? '(Elevada)' : feno > 25 ? '(Moderada)' : '(Normal)'}</li>
-                        <li>✓ <strong>Reversibilidad:</strong> ${respuestaBD}</li>
-                    </ul>
-                    <p style="margin-top: 15px; font-size: 11px; color: #0c4a6e; font-style: italic;">
-                        ⚠️ Esta interpretación es de apoyo diagnóstico. La correlación clínica con síntomas, exploración física y contexto del paciente es esencial para el diagnóstico final.
-                    </p>
                 </div>
             `;
             
@@ -1088,15 +736,12 @@
         }
         
         function limpiarFormulario() {
-            document.getElementById('edad').value = '55';
-            document.getElementById('sexo').value = 'M';
-            document.getElementById('altura').value = '175';
-            document.getElementById('peso').value = '75';
-            
-            document.getElementById('fev1').value = '2.10';
-            document.getElementById('fvc').value = '4.20';
-            document.getElementById('fev6').value = '4.10';
-            document.getElementById('fef').value = '0.85';
-            document.getElementById('pef').value = '6.50';
-            document.getElementById('fiv1').value = '3.80';
-            document.
+            location.reload();
+        }
+        
+        window.addEventListener('load', function() {
+            analizarCompleto();
+        });
+    </script>
+</body>
+</html>
