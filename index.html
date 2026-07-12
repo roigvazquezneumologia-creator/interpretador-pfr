@@ -46,7 +46,6 @@
             min-height: 100vh;
         }
 
-        /* NAVBAR */
         .navbar {
             background: linear-gradient(135deg, var(--sidebar-bg) 0%, #2d5a8c 100%);
             color: white;
@@ -94,7 +93,6 @@
             opacity: 0.9;
         }
 
-        /* CONTENEDOR PRINCIPAL */
         .container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -131,7 +129,6 @@
             flex: 1;
         }
 
-        /* SECCIONES */
         .section {
             margin-bottom: 20px;
             border: 2px solid var(--border-color);
@@ -175,7 +172,6 @@
             transform: rotate(180deg);
         }
 
-        /* FORMULARIOS */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -220,7 +216,6 @@
             box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.1);
         }
 
-        /* BOTONES */
         .button-group {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -271,7 +266,6 @@
             color: white;
         }
 
-        /* GRÁFICOS */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -301,7 +295,6 @@
             max-height: 300px;
         }
 
-        /* RESULTADOS */
         .result-item {
             background: var(--bg-secondary);
             padding: 20px;
@@ -401,6 +394,10 @@
             border-bottom: 2px solid var(--accent-secondary);
         }
 
+        #contenedor-pdf {
+            display: none;
+        }
+
         @media (max-width: 1200px) {
             .container {
                 grid-template-columns: 1fr;
@@ -432,7 +429,6 @@
     </style>
 </head>
 <body>
-    <!-- NAVBAR -->
     <div class="navbar">
         <div class="navbar-brand">🫁 PFR Interpreter v2.0 COMPLETO</div>
         <div class="navbar-controls">
@@ -446,14 +442,11 @@
         </div>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <div class="container">
-        <!-- PANEL IZQUIERDO: ENTRADA -->
         <div class="panel">
             <div class="panel-header">📋 DATOS DE ENTRADA</div>
             <div class="panel-body">
                 
-                <!-- DATOS DEL PACIENTE -->
                 <div class="section">
                     <div class="section-header" onclick="toggleSection(this)">
                         <span>👤 DATOS DEL PACIENTE</span>
@@ -490,7 +483,6 @@
                     </div>
                 </div>
 
-                <!-- ESPIROMETRÍA FORZADA -->
                 <div class="section">
                     <div class="section-header" onclick="toggleSection(this)">
                         <span>📈 ESPIROMETRÍA FORZADA <span class="badge">20+ PARÁMETROS</span></span>
@@ -549,14 +541,12 @@
                     </div>
                 </div>
 
-                <!-- VOLÚMENES PULMONARES - EXPANDIDA -->
                 <div class="section">
                     <div class="section-header" onclick="toggleSection(this)">
                         <span>📊 VOLÚMENES PULMONARES <span class="badge">18 PARÁMETROS</span></span>
                         <span class="toggle-arrow">▼</span>
                     </div>
                     <div class="section-content">
-                        <!-- VOLÚMENES SIMPLES -->
                         <div class="subsection-title">📌 VOLÚMENES SIMPLES</div>
                         <div class="form-grid">
                             <div class="form-group"><label>TV - Volumen Corriente (L)</label><input type="number" id="tv" value="0.55" step="0.01"></div>
@@ -568,7 +558,6 @@
                             <div class="form-group"><label>RV - Volumen Residual (L)</label><input type="number" id="rv" value="2.20" step="0.1"></div>
                         </div>
 
-                        <!-- CAPACIDADES PULMONARES -->
                         <div class="subsection-title">📌 CAPACIDADES PULMONARES</div>
                         <div class="form-grid">
                             <div class="form-group"><label>IC - Capacidad Inspiratoria (L)</label><input type="number" id="ic" value="3.65" step="0.1"></div>
@@ -585,14 +574,12 @@
                             <div class="form-group"><label>EVC - Capacidad Vital Espiratoria (L)</label><input type="number" id="evc" value="4.40" step="0.1"></div>
                         </div>
 
-                        <!-- PARÁMETROS ALVEOLARES -->
                         <div class="subsection-title">📌 PARÁMETROS ALVEOLARES</div>
                         <div class="form-grid">
                             <div class="form-group"><label>VA - Volumen Alveolar (L)</label><input type="number" id="va_vol" value="5.20" step="0.1"></div>
                             <div class="form-group"><label>VD - Volumen Muerto (mL)</label><input type="number" id="vd" value="150" step="10"></div>
                         </div>
 
-                        <!-- RATIOS Y RELACIONES -->
                         <div class="subsection-title">📌 RATIOS Y RELACIONES</div>
                         <div class="form-grid">
                             <div class="form-group"><label>RV/TLC - Relación Volumen Residual/CPT (%)</label><input type="number" id="rv_tlc" value="35.5" step="0.1"></div>
@@ -604,7 +591,6 @@
                             <div class="form-group"><label>FRC/TLC - Relación FRC/CPT (%)</label><input type="number" id="frc_tlc" value="48.4" step="0.1"></div>
                         </div>
 
-                        <!-- RESISTENCIA Y COMPLIANCE -->
                         <div class="subsection-title">📌 RESISTENCIA Y CUMPLIMIENTO</div>
                         <div class="form-grid">
                             <div class="form-group"><label>Raw - Resistencia Vías Aéreas (cmH₂O/L/s)</label><input type="number" id="raw" value="2.5" step="0.1"></div>
@@ -617,7 +603,6 @@
                     </div>
                 </div>
 
-                <!-- DIFUSIÓN PULMONAR -->
                 <div class="section">
                     <div class="section-header" onclick="toggleSection(this)">
                         <span>🫁 DIFUSIÓN PULMONAR (DLCO) <span class="badge">9 PARÁMETROS</span></span>
@@ -644,7 +629,6 @@
                     </div>
                 </div>
 
-                <!-- FENO -->
                 <div class="section">
                     <div class="section-header" onclick="toggleSection(this)">
                         <span>💨 FENO - ÓXIDO NÍTRICO EXHALADO</span>
@@ -688,7 +672,6 @@
                     </div>
                 </div>
 
-                <!-- PRUEBA DE PROVOCACIÓN BRONQUIAL -->
                 <div class="section">
                     <div class="section-header" onclick="toggleSection(this)">
                         <span>💨 PRUEBA DE PROVOCACIÓN BRONQUIAL</span>
@@ -746,12 +729,10 @@
             </div>
         </div>
 
-        <!-- PANEL DERECHO: RESULTADOS Y GRÁFICOS -->
         <div class="panel">
             <div class="panel-header">📊 RESULTADOS E INTERPRETACIÓN</div>
             <div class="panel-body" id="resultados">
                 
-                <!-- GRÁFICOS -->
                 <div class="charts-grid" id="chartsContainer" style="display: none;">
                     <div class="chart-container">
                         <div class="chart-title">Predicho vs Medido</div>
@@ -763,7 +744,6 @@
                     </div>
                 </div>
 
-                <!-- RESULTADOS -->
                 <div id="resultadosContent"></div>
 
                 <p style="text-align: center; color: var(--text-secondary); padding: 40px 0;">
@@ -772,6 +752,9 @@
             </div>
         </div>
     </div>
+
+    <!-- CONTENEDOR OCULTO PARA PDF -->
+    <div id="contenedor-pdf" style="display: none;"></div>
 
     <script>
         let chartsInstances = {};
@@ -1119,17 +1102,56 @@
             location.reload();
         }
 
-        function generarPDF() {
-            const element = document.querySelector('.panel:last-child');
-            const opt = {
-                margin: 10,
-                filename: `PFR_Reporte_${document.getElementById('nombrePaciente').value || 'paciente'}_${new Date().toISOString().slice(0, 10)}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-            };
+        async function generarPDF() {
+            try {
+                // Esperar a que los gráficos se hayan renderizado
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-            html2pdf().set(opt).from(element).save();
+                const elemento = document.querySelector('.panel:last-child');
+                const contenedor = document.getElementById('contenedor-pdf');
+                
+                // Clonar el contenido a exportar
+                const clon = elemento.cloneNode(true);
+                contenedor.innerHTML = '';
+                contenedor.appendChild(clon);
+
+                // Convertir todos los canvas a imágenes
+                const canvas = contenedor.querySelectorAll('canvas');
+                canvas.forEach(c => {
+                    const img = document.createElement('img');
+                    img.src = c.toDataURL('image/png');
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                    c.parentNode.replaceChild(img, c);
+                });
+
+                // Configurar html2pdf
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: `PFR_Reporte_${document.getElementById('nombrePaciente').value || 'paciente'}_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 2,
+                        useCORS: true,
+                        logging: false
+                    },
+                    jsPDF: { 
+                        orientation: 'portrait', 
+                        unit: 'mm', 
+                        format: 'a4'
+                    },
+                    pagebreak: { mode: ['css', 'legacy'] }
+                };
+
+                // Generar PDF
+                await html2pdf().set(opt).from(contenedor).save();
+                
+                alert('✓ PDF generado correctamente.');
+                
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+                alert('✗ Error al generar el PDF. Intenta nuevamente.');
+            }
         }
     </script>
 </body>
