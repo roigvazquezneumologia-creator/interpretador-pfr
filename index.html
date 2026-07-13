@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PFR INTERPRETER - Sistema Profesional de Función Pulmonar</title>
+  <title>ANALIZADOR DE PRUEBAS FUNCIONALES RESPIRATORIAS</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -13,29 +13,56 @@
       color: #2c3e50;
     }
 
+    /* ===================== BANNER ELEGANTE ===================== */
     .header {
-      background: linear-gradient(135deg, #1a3a52 0%, #1a5276 100%);
+      background: linear-gradient(135deg, #0d47a1 0%, #1a5276 45%, #1b7c4f 100%);
       color: white;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 26px 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
     }
 
     .header-content {
-      max-width: 1800px;
+      max-width: 1900px;
       margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 22px;
     }
 
-    .header h1 {
-      font-size: 26px;
-      margin-bottom: 5px;
+    .header-logo {
+      width: 96px;
+      height: 96px;
+      flex-shrink: 0;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.20);
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-logo svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+    }
+
+    .header-text h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
     }
 
     .header-author {
       font-size: 12px;
-      opacity: 0.95;
+      opacity: 0.98;
       font-weight: 500;
+      line-height: 1.6;
     }
 
+    /* ===================== LAYOUT ===================== */
     .container {
       display: grid;
       grid-template-columns: 40% 60%;
@@ -99,7 +126,6 @@
       padding: 12px;
       background: #f8f9fa;
     }
-
     .section-content.show { display: block; }
 
     .form-row {
@@ -162,6 +188,7 @@
     .btn-limpiar { background: #95a5a6; color: white; }
     .btn-limpiar:hover { background: #7f8c8d; }
 
+    /* ===================== RESULTADOS ===================== */
     .result-section {
       margin-bottom: 15px;
       border: 1px solid #bdc3c7;
@@ -227,23 +254,98 @@
 
     .guideline-ref em { color: #1a5276; font-weight: 500; }
 
-    @media (max-width: 1400px) {
-      .container { grid-template-columns: 1fr; }
-      .panel-body { max-height: auto; }
+    /* ===================== COMPARADOR BD ===================== */
+    .guide-comparison {
+      background: #f0f7ff;
+      border: 1px solid #c5d9f7;
+      border-radius: 5px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 9px;
+    }
+
+    .guide-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr 2fr;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 8px;
+      background: white;
+      border-radius: 3px;
+      border-left: 3px solid #0d47a1;
+    }
+
+    .guide-name {
+      font-weight: bold;
+      color: #0d47a1;
+      min-width: 100px;
+    }
+
+    .guide-criteria { color: #333; }
+    .guide-result { font-weight: bold; text-align: right; }
+
+    .delta-grid {
+      margin-top: 6px;
     }
 
     .toggle-icon { transition: transform 0.3s; }
     .toggle-icon.open { transform: rotate(180deg); }
+
+    @media (max-width: 1400px) {
+      .container { grid-template-columns: 1fr; }
+      .panel-body { max-height: auto; }
+      .header-content { flex-direction: column; text-align: center; }
+      .guide-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 
 <body>
   <div class="header">
     <div class="header-content">
-      <h1>🫁 PFR INTERPRETER - SISTEMA PROFESIONAL DE FUNCIÓN PULMONAR</h1>
-      <div class="header-author">
-        <strong>Autor:</strong> Dr. Francisco Jose Roig Vázquez, Médico Especialista en Neumología<br>
-        <strong>Basado en:</strong> Guías ATS/ERS 2005 • SEPAR 2013 • GOLD 2023 • GLI 2012
+      <div class="header-logo" aria-hidden="true">
+        <!-- Dibujo/ilustración vectorial: pulmones + trazo tipo curva funcional -->
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Pulmón izquierdo -->
+          <ellipse cx="70" cy="112" rx="34" ry="52" fill="#4da6ff" opacity="0.9"/>
+          <!-- Pulmón derecho -->
+          <ellipse cx="130" cy="112" rx="34" ry="52" fill="#2d9e63" opacity="0.9"/>
+
+          <!-- Traquea -->
+          <rect x="93" y="35" width="14" height="42" fill="#ffffff" opacity="0.45" rx="4"/>
+          <rect x="93" y="67" width="14" height="70" fill="#ffffff" opacity="0.35" rx="4"/>
+
+          <!-- Bronquios -->
+          <line x1="100" y1="77" x2="78" y2="98" stroke="white" stroke-width="3" opacity="0.85"/>
+          <line x1="100" y1="77" x2="122" y2="98" stroke="white" stroke-width="3" opacity="0.85"/>
+
+          <!-- “Curva” funcional (tipo espirometría) -->
+          <path d="M45 150 C65 135, 80 135, 95 145 S125 160, 155 145"
+                fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.65"/>
+
+          <!-- Bandas de lectura/medición -->
+          <circle cx="52" cy="148" r="6" fill="#ffcf5a" opacity="0.85"/>
+          <circle cx="148" cy="146" r="6" fill="#ffcf5a" opacity="0.85"/>
+
+          <!-- Pequeño “corazón” (referencia clínica) -->
+          <path d="M100 64
+                   C92 56, 82 56, 78 64
+                   C74 72, 80 80, 88 86
+                   C94 90, 100 96, 100 96
+                   C100 96, 106 90, 112 86
+                   C120 80, 126 72, 122 64
+                   C118 56, 108 56, 100 64 Z"
+                fill="#ff6b9d" opacity="0.7"/>
+        </svg>
+      </div>
+
+      <div class="header-text">
+        <h1>🫁 ANALIZADOR DE PRUEBAS FUNCIONALES RESPIRATORIAS</h1>
+        <div class="header-author">
+          <strong>Especialidad:</strong> Neumología Clínica<br>
+          <strong>Autor:</strong> Dr. Francisco Jose Roig Vázquez<br>
+          <strong>Estándares:</strong> ATS/ERS 2005 • SEPAR 2013 • GOLD 2023 • GLI 2012
+        </div>
       </div>
     </div>
   </div>
@@ -480,15 +582,12 @@
     }
 
     function getPatron(ratio, tlcPct, hasFVC, hasFEV1) {
-      // ✅ Corrección: "NO EVALUABLE" SOLO si faltan datos esenciales para ratio (FVC y/o FEV1).
       if (!hasFVC || !hasFEV1 || isNaN(ratio)) return 'NO EVALUABLE';
 
-      // Si no hay TLC, al menos se clasifica por ratio
       if (isNaN(tlcPct) || tlcPct === null || tlcPct === '') {
         return (ratio < 70) ? 'OBSTRUCTIVO' : 'NORMAL';
       }
 
-      // Si hay TLC y ratio:
       if (ratio < 70) return 'OBSTRUCTIVO';
       if (tlcPct < 80) return 'RESTRICTIVO';
       if (ratio < 80 && tlcPct < 80) return 'MIXTO';
@@ -548,6 +647,71 @@
       return '<br>• <strong>FeNO50 (ATS/ERS):</strong> ' + result;
     }
 
+    /* ===================== NUEVAS FUNCIONES: COMPARAR BD 3 GUÍAS ===================== */
+    // deltaPct: cambio porcentual (ej. +12.3)
+    // deltaAbsL: cambio absoluto en litros (ej. +0.250 L)
+    function evaluarBD_ATS_ERS(deltaPct, deltaAbsL) {
+      if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
+        return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
+      }
+      const abs_mL = deltaAbsL * 1000;
+      const positiva = (deltaPct >= 12 && abs_mL >= 200);
+      return positiva
+        ? { estado: 'POSITIVA (≥12% y ≥200 mL)', clase: 'status-severo' }
+        : { estado: 'NEGATIVA', clase: 'status-normal' };
+    }
+
+    function evaluarBD_SEPAR(deltaPct, deltaAbsL) {
+      // Implementación con 2 niveles (“positiva” y “muy positiva”) siguiendo el uso práctico en SEPAR/GesEPOC:
+      // - Positiva: >12% y >200 mL
+      // - Muy positiva: >15% y >400 mL
+      if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
+        return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
+      }
+
+      const abs_mL = deltaAbsL * 1000;
+      const positiva = (deltaPct > 12 && abs_mL > 200);
+      const muyPos = (deltaPct > 15 && abs_mL > 400);
+
+      if (muyPos) {
+        return { estado: 'MUY POSITIVA (>15% y >400 mL)', clase: 'status-severo' };
+      }
+      if (positiva) {
+        return { estado: 'POSITIVA (>12% y >200 mL)', clase: 'status-moderado' };
+      }
+      return { estado: 'NEGATIVA', clase: 'status-normal' };
+    }
+
+    function evaluarBD_GOLD(deltaPct, deltaAbsL) {
+      // GOLD 2023: la reversibilidad NO se recomienda como criterio para guiar decisión/diagnóstico
+      // -> aquí la mostramos como “dato compatible” con cautela.
+      if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
+        return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
+      }
+
+      const abs_mL = deltaAbsL * 1000;
+
+      const compatibleMarcada = (deltaPct >= 15 && abs_mL >= 400);
+      const compatibleClasica = (deltaPct >= 12 && abs_mL >= 200);
+
+      if (compatibleMarcada) {
+        return {
+          estado: 'Compatible con reversibilidad marcada (≥15% y ≥400 mL) — interpretar con cautela (GOLD 2023)',
+          clase: 'status-leve'
+        };
+      }
+      if (compatibleClasica) {
+        return {
+          estado: 'Compatible con respuesta significativa (≥12% y ≥200 mL) — interpretar con cautela (GOLD 2023)',
+          clase: 'status-moderado'
+        };
+      }
+      return {
+        estado: 'No cumple umbrales de reversibilidad significativa — interpretar con clínica (GOLD 2023)',
+        clase: 'status-normal'
+      };
+    }
+
     function analizarCompleto() {
       const nombre = document.getElementById('nombre').value || 'Paciente';
       const edad = parseInt(document.getElementById('edad').value);
@@ -583,7 +747,7 @@
       const hasFVC = !isNaN(fvc);
       const hasFEV1 = !isNaN(fev1);
 
-      // Predichos (solo si sexo/edad/altura están)
+      // Predichos (GLI 2012)
       const pred = calcularGLI2012(edad, sexo, altura);
 
       const fev1Pct = (!isNaN(fev1) && !isNaN(pred.fev1)) ? (fev1 / pred.fev1 * 100) : NaN;
@@ -596,13 +760,20 @@
 
       const ratio = (!isNaN(fev1) && !isNaN(fvc) && fvc !== 0) ? (fev1 / fvc * 100) : NaN;
 
-      const cambio_absoluto = (!isNaN(fev1_post) && !isNaN(fev1)) ? (fev1_post - fev1) : NaN;
-      const cambio_porcentual = (!isNaN(cambio_absoluto) && !isNaN(fev1) && fev1 !== 0) ? (cambio_absoluto / fev1 * 100) : NaN;
-      const respuesta_bd = !isNaN(cambio_porcentual) ? (cambio_porcentual >= 12 ? 'POSITIVA' : 'NEGATIVA') : 'NO EVALUABLE';
+      // Cambios BD (según tu formulario: FEV1 pre y post)
+      const cambio_absoluto = (!isNaN(fev1_post) && !isNaN(fev1)) ? (fev1_post - fev1) : NaN; // L
+      const cambio_porcentual = (!isNaN(cambio_absoluto) && !isNaN(fev1) && fev1 !== 0)
+        ? (cambio_absoluto / fev1 * 100)
+        : NaN;
+
+      // Evaluación por guías (se puede calcular aunque luego el bloque no se muestre si no es evaluable)
+      const bd_atsers = evaluarBD_ATS_ERS(cambio_porcentual, cambio_absoluto);
+      const bd_separ = evaluarBD_SEPAR(cambio_porcentual, cambio_absoluto);
+      const bd_gold = evaluarBD_GOLD(cambio_porcentual, cambio_absoluto);
 
       const patron = getPatron(ratio, tlcPct, hasFVC, hasFEV1);
 
-      // --- Construcción de UI: solo mostrar filas si están medidos ---
+      // ===================== ESPIROMETRÍA =====================
       const esp = `
         <div class="result-section">
           <div class="result-section-header">📈 ESPIROMETRÍA (GLI 2012)</div>
@@ -695,6 +866,7 @@
         </div>
       `;
 
+      // ===================== VOLUMENES =====================
       const vol = `
         ${(!isNaN(tlc) || !isNaN(rv_tlc)) ? `
           <div class="result-section">
@@ -728,6 +900,7 @@
         ` : ''}
       `;
 
+      // ===================== DLCO =====================
       const diff = `
         ${(!isNaN(dlco_sb) || !isNaN(kco_c) || !isNaN(va_sb) || !isNaN(vc_max) || !isNaN(hb)) ? `
           <div class="result-section">
@@ -800,32 +973,69 @@
         ` : ''}
       `;
 
+      // ===================== BD (MODIFICADO: gate por cambio %/abs calculables + comparador 3 guías) =====================
       const bd = `
-        ${!isNaN(fev1_post) ? `
+        ${(!isNaN(cambio_porcentual) && !isNaN(cambio_absoluto)) ? `
           <div class="result-section">
             <div class="result-section-header">💊 TEST BRONCODILATADOR ${farmaco_bd ? '(' + farmaco_bd + ')' : ''}</div>
             <div class="result-section-body">
+
               <table class="result-table">
                 <tbody>
                   <tr>
-                    <td><strong>Cambio FEV1:</strong></td>
-                    <td>${!isNaN(cambio_absoluto) ? cambio_absoluto.toFixed(2) + 'L' : 'No medido'}</td>
-                    <td>
-                      ${!isNaN(cambio_porcentual) ? '(' + cambio_porcentual.toFixed(1) + '%)' : ''}
-                    </td>
-                    <td>
-                      <span class="${!isNaN(cambio_porcentual) && cambio_porcentual >= 12 ? 'status-severo' : 'status-normal'}">
-                        ${respuesta_bd}
-                      </span>
-                    </td>
+                    <td><strong>FEV1 Pre-BD:</strong></td>
+                    <td>${!isNaN(fev1) ? fev1.toFixed(2) + ' L' : 'No medido'}</td>
+                    <td><strong>FEV1 Post-BD:</strong></td>
+                    <td>${!isNaN(fev1_post) ? fev1_post.toFixed(2) + ' L' : 'No medido'}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Cambio absoluto:</strong></td>
+                    <td>${!isNaN(cambio_absoluto) ? cambio_absoluto.toFixed(3) + ' L' : 'No medido'}</td>
+                    <td><strong>Cambio porcentual:</strong></td>
+                    <td>${!isNaN(cambio_porcentual) ? cambio_porcentual.toFixed(1) + ' %' : 'No medido'}</td>
                   </tr>
                 </tbody>
               </table>
+
+              <div class="guide-comparison" style="margin-top: 12px;">
+                <strong style="color:#0d47a1; display:block; margin-bottom:8px;">
+                  📋 Comparación del test broncodilatador (FEV1)
+                </strong>
+
+                <div class="guide-row">
+                  <div class="guide-name">🔵 ATS/ERS 2005</div>
+                  <div class="guide-criteria">Criterio: <strong>≥12%</strong> Y <strong>≥200 mL</strong> (ambos)</div>
+                  <div class="guide-result"><span class="${bd_atsers.clase}">${bd_atsers.estado}</span></div>
+                </div>
+
+                <div class="guide-row">
+                  <div class="guide-name">🟢 SEPAR 2013</div>
+                  <div class="guide-criteria">
+                    Criterios usados:
+                    <div style="margin-top:4px;">
+                      • Positiva: <strong>&gt;12%</strong> y <strong>&gt;200 mL</strong><br>
+                      • Muy positiva: <strong>&gt;15%</strong> y <strong>&gt;400 mL</strong>
+                    </div>
+                  </div>
+                  <div class="guide-result"><span class="${bd_separ.clase}">${bd_separ.estado}</span></div>
+                </div>
+
+                <div class="guide-row">
+                  <div class="guide-name">🟡 GOLD 2023</div>
+                  <div class="guide-criteria">
+                    La reversibilidad <strong>no</strong> se recomienda para guiar decisión/diagnóstico.
+                    Se interpreta como <em>dato complementario con cautela</em>.
+                  </div>
+                  <div class="guide-result"><span class="${bd_gold.clase}">${bd_gold.estado}</span></div>
+                </div>
+              </div>
+
             </div>
           </div>
-        ` : ''}
+        ` : '' }
       `;
 
+      // ===================== FeNO =====================
       const feno = `
         ${!isNaN(feno50) ? `
           <div class="result-section">
@@ -848,6 +1058,7 @@
         ` : ''}
       `;
 
+      // ===================== Provocación =====================
       const prov = `
         ${(pc20 || pd20) ? `
           <div class="result-section">
@@ -861,6 +1072,7 @@
                       <td><span class="${parseFloat(pc20) < 8 ? 'status-severo' : 'status-normal'}">${parseFloat(pc20) < 8 ? 'POSITIVO' : 'NEGATIVO'}</span></td>
                     </tr>
                   ` : ''}
+
                   ${pd20 ? `
                     <tr>
                       <td>PD20: ${pd20} µmol</td>
@@ -874,7 +1086,7 @@
         ` : ''}
       `;
 
-      // Patrón visual: si NO EVALUABLE, no forzar colores por NaN
+      // Patrón visual
       const patronStatusClass = (patron === 'NO EVALUABLE')
         ? 'status-no-medido'
         : (patron === 'NORMAL' ? 'status-normal' : (patron === 'OBSTRUCTIVO' ? 'status-severo' : 'status-moderado'));
