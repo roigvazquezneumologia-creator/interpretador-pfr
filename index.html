@@ -436,11 +436,11 @@
                     </div>
                     <div class="section-content">
                         <div class="form-row">
-                            <div class="form-group"><label>DLCO_SB (mL/min/mmHg)</label><input type="number" id="dlco_sb" value="22.4" step="0.1"></div>
+                            <div class="form-group"><label>DLCO_SB (L)</label><input type="number" id="dlco_sb" value="22.4" step="0.1"></div>
                             <div class="form-group"><label>Hemoglobina (g/dL)</label><input type="number" id="hb" value="14.2" step="0.1"></div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group"><label>KCO_C (mL/min/mmHg/L)</label><input type="number" id="kco_c" value="4.31" step="0.01"></div>
+                            <div class="form-group"><label>KCO_C (L)</label><input type="number" id="kco_c" value="4.31" step="0.01"></div>
                             <div class="form-group"><label>VA_SB (L)</label><input type="number" id="va_sb" value="5.20" step="0.1"></div>
                         </div>
                         <div class="form-row">
@@ -696,8 +696,8 @@
                         <table class="result-table">
                             <thead><tr><th>Parámetro</th><th>Medido</th><th>Predicho</th><th>%</th><th>Severidad</th></tr></thead>
                             <tbody>
-                                <tr><td>DLCO_SB</td><td>${dlco_sb.toFixed(1)}</td><td>${pred.dlco.toFixed(1)}</td><td><span class="${getStatus(dlcoPct)}">${dlcoPct}%</span></td><td><span class="${getStatus(dlcoPct)}">${getSeveridad(dlcoPct)}</span></td></tr>
-                                <tr><td>KCO_C</td><td>${kco_c.toFixed(2)}</td><td>4.0-5.5</td><td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${kco_cPct}%</span></td><td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${kco_c >= 4 ? 'Normal' : 'Bajo'}</span></td></tr>
+                                <tr><td>DLCO_SB</td><td>${dlco_sb.toFixed(1)}L</td><td>${pred.dlco.toFixed(1)}</td><td><span class="${getStatus(dlcoPct)}">${dlcoPct}%</span></td><td><span class="${getStatus(dlcoPct)}">${getSeveridad(dlcoPct)}</span></td></tr>
+                                <tr><td>KCO_C</td><td>${kco_c.toFixed(2)}L</td><td>4.0-5.5</td><td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${kco_cPct}%</span></td><td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${kco_c >= 4 ? 'Normal' : 'Bajo'}</span></td></tr>
                                 <tr><td>VA_SB</td><td>${va_sb.toFixed(2)}L</td><td>-</td><td>-</td><td>-</td></tr>
                                 <tr><td>VC_MAX</td><td>${vc_max.toFixed(2)}L</td><td>-</td><td>-</td><td>-</td></tr>
                                 <tr><td>Hemoglobina</td><td>${hb.toFixed(1)}g/dL</td><td>13.5-17.5</td><td>${(hb/15.5*100).toFixed(0)}%</td><td><span class="${hb >= 13.5 ? 'status-normal' : 'status-severo'}">${hb >= 13.5 ? 'Normal' : 'Bajo'}</span></td></tr>
