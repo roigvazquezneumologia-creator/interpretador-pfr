@@ -20,6 +20,7 @@
       padding: 26px 20px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.2);
     }
+    .header.no-print { /* solo para print */ }
 
     .header-content {
       max-width: 1900px;
@@ -80,6 +81,8 @@
       display: flex;
       flex-direction: column;
     }
+
+    .panel.no-print { /* solo para print */ }
 
     .panel-header {
       background: #1a5276;
@@ -293,11 +296,60 @@
       .header-content { flex-direction: column; text-align: center; }
       .guide-row { grid-template-columns: 1fr; }
     }
+
+    /* ===================== PESTAÑAS PDF (NO AUTOMÁTICO) ===================== */
+    .tabbar{
+      display:flex;
+      gap:10px;
+      padding: 10px 15px;
+      border-bottom: 1px solid #bdc3c7;
+      background: #ecf0f1;
+    }
+    .tab-btn{
+      border: 1px solid #c5d9f7;
+      background: #ffffff;
+      color: #0d47a1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .tab-btn:hover{ background:#f0f7ff; }
+
+    .tab-btn-primary{
+      background:#0d47a1;
+      color:#fff;
+      border-color:#0d47a1;
+    }
+    .tab-btn-primary:hover{ background:#083a7e; }
+
+    /* Ocultamos pestañas/inputs solo en modo impresión */
+    @media print {
+      @page { size: auto; margin: 12mm; }
+
+      .no-print { display: none !important; }
+
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+
+      .panel {
+        box-shadow: none !important;
+      }
+
+      /* Asegurar que no se corte */
+      .panel-body {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <div class="header">
+  <div class="header no-print">
     <div class="header-content">
       <div class="header-logo" aria-hidden="true">
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -339,8 +391,8 @@
   </div>
 
   <div class="container">
-    <!-- PANEL IZQUIERDO -->
-    <div class="panel">
+    <!-- PANEL IZQUIERDO: ENTRADA -->
+    <div class="panel no-print">
       <div class="panel-header">📋 DATOS CLÍNICOS DE ENTRADA</div>
       <div class="panel-body">
 
@@ -496,9 +548,20 @@
       </div>
     </div>
 
-    <!-- PANEL DERECHO -->
+    <!-- PANEL DERECHO: RESULTADOS -->
     <div class="panel">
       <div class="panel-header">📊 RESULTADOS E INTERPRETACIÓN SEGÚN GUÍAS</div>
+
+      <!-- Pestañas (solo PDF al pulsar; NO automático) -->
+      <div class="tabbar no-print">
+        <button type="button" class="tab-btn" onclick="document.getElementById('resultados').scrollIntoView({behavior:'smooth', block:'start'})">
+          Vista
+        </button>
+        <button type="button" class="tab-btn tab-btn-primary" onclick="generarPDF()">
+          PDF
+        </button>
+      </div>
+
       <div class="panel-body" id="resultados">
         <p style="text-align: center; color: #999; padding: 60px 20px;">
           ✓ Completa los datos y haz clic en ANALIZAR<br>
@@ -526,6 +589,12 @@
           <small style="margin-top: 10px; display: block;">Interpretaciones según ATS/ERS 2005, SEPAR 2013 y GOLD 2023</small>
         </p>
       `;
+    }
+
+    // ====== PDF NO automático: solo imprime/guarda al pulsar "PDF" ======
+    function generarPDF() {
+      // El navegador abrirá el diálogo de impresión/guardado en PDF
+      window.print();
     }
 
     function calcularGLI2012(edad, sexo, altura) {
@@ -567,24 +636,21 @@
      * - OBSTRUCTIVO: FEV1/FVC < 70
      * - RESTRICTIVO: TLC < 80 (solo si hay TLC)
      * - MIXTO: ambos (obstructivo y restrictivo)
-     * - SOSPECHA RESTRICTIVO: si NO obstructivo por ratio (>=70) y FVC% < 80, PERO SIN TLC
+     * - SOSPECHA RESTRICTIVO: sin TLC:
+     *     ratio >= 70 (no obstrucción) y FVC% < 80 => sospecha compatible
      */
     function getPatron(ratio, tlcPct, fvcPct, hasFVC, hasFEV1) {
       if (!hasFVC || !hasFEV1 || isNaN(ratio)) return 'NO EVALUABLE';
 
       const obstructivo = ratio < 70;
 
-      // Si no hay TLC: no podemos confirmar restricción verdadera
+      // Si NO hay TLC => no confirmamos restricción real, pero sí sospecha
       if (isNaN(tlcPct) || tlcPct === null || tlcPct === '') {
         if (obstructivo) return 'OBSTRUCTIVO';
-
-        // Sospecha de restricción por FVC baja con ratio normal (no obstructivo)
         if (!isNaN(fvcPct) && fvcPct < 80) return 'SOSPECHA RESTRICTIVO';
-
         return 'NORMAL';
       }
 
-      // Con TLC: clasificar restricción real / mixto
       const restrictivo = tlcPct < 80;
 
       if (obstructivo && restrictivo) return 'MIXTO';
@@ -627,7 +693,7 @@
 
       if (patron === 'SOSPECHA RESTRICTIVO') {
         let s = '• <strong>SOSPECHA DE PATRÓN RESTRICTIVO:</strong> FVC &lt; 80% predicho con cociente FEV1/FVC &ge; 70%. ';
-        s += 'Esto es <strong>compatible</strong> con posible restricción, pero <strong>no se confirma sin TLC</strong> (restricción verdadera requiere volúmenes pulmonares).';
+        s += 'Es compatible con posible restricción, pero <strong>no se confirma sin TLC</strong> (restricción verdadera requiere volúmenes pulmonares).';
         if (!isNaN(dlcoPct) && dlcoPct < 80) s += ' DLCO disminuida puede apoyar afectación parenquimatosa u otras causas.';
         return s;
       }
@@ -653,7 +719,6 @@
       return '<br>• <strong>FeNO50 (ATS/ERS):</strong> ' + result;
     }
 
-    /* ===================== COMPARACIÓN TEST BD 3 GUÍAS ===================== */
     function evaluarBD_ATS_ERS(deltaPct, deltaAbsL) {
       if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
         return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
@@ -761,7 +826,7 @@
       const bd_separ = evaluarBD_SEPAR(cambio_porcentual, cambio_absoluto);
       const bd_gold = evaluarBD_GOLD(cambio_porcentual, cambio_absoluto);
 
-      // ✅ CAMBIO CLAVE: pasar fvcPct para poder etiquetar SOSPECHA RESTRICTIVO sin TLC
+      // Corregido: permitir SOSPECHA RESTRICTIVO sin TLC
       const patron = getPatron(ratio, tlcPct, fvcPct, hasFVC, hasFEV1);
 
       const esp = `
@@ -1070,7 +1135,6 @@
         ` : ''}
       `;
 
-      // Clase visual del patrón
       const patronStatusClass = (patron === 'NO EVALUABLE')
         ? 'status-no-medido'
         : (patron === 'NORMAL' ? 'status-normal'
