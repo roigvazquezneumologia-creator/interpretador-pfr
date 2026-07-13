@@ -562,10 +562,31 @@
         }
         
         function getPatron(ratio, tlcPct) {
-            if (isNaN(ratio) || isNaN(tlcPct)) return 'NO EVALUABLE';
-            if (ratio < 70) return 'OBSTRUCTIVO';
-            if (tlcPct < 80) return 'RESTRICTIVO';
-            if (ratio < 80 && tlcPct < 80) return 'MIXTO';
+            // Si no tenemos ratio (FVC/FEV1 no calculable), no evaluable
+            if (isNaN(ratio) || ratio === null || ratio === '') {
+                return 'NO EVALUABLE';
+            }
+            
+            // Si solo tenemos ratio, determinamos patrón
+            if (isNaN(tlcPct) || tlcPct === null || tlcPct === '') {
+                // Solo con ratio
+                if (ratio < 70) {
+                    return 'OBSTRUCTIVO';
+                } else {
+                    return 'NORMAL';
+                }
+            }
+            
+            // Si tenemos ambos
+            if (ratio < 70) {
+                return 'OBSTRUCTIVO';
+            }
+            if (tlcPct < 80) {
+                return 'RESTRICTIVO';
+            }
+            if (ratio < 80 && tlcPct < 80) {
+                return 'MIXTO';
+            }
             return 'NORMAL';
         }
         
@@ -577,14 +598,15 @@
                 interp += '• <strong>PATRÓN OBSTRUCTIVO (ATS/ERS 2005):</strong> Cociente FEV1/FVC &lt; 70%. ';
                 if (fev1Pct >= 80) interp += 'Obstrucción LEVE.';
                 else if (fev1Pct >= 50) interp += 'Obstrucción MODERADA-SEVERA.';
-                else interp += 'Obstrucción MUY SEVERA.';
-                if (dlcoPct < 80) interp += ' Difusión comprometida - Sugiere enfisema.';
+                else if (fev1Pct >= 25) interp += 'Obstrucción MUY SEVERA.';
+                else interp += 'Obstrucción EXTREMADAMENTE SEVERA.';
+                if (!isNaN(dlcoPct) && dlcoPct < 80) interp += ' Difusión comprometida - Sugiere enfisema.';
             } else if (patron === 'RESTRICTIVO') {
                 interp += '• <strong>PATRÓN RESTRICTIVO (ATS/ERS 2005):</strong> TLC &lt; 80% predicho. ';
                 if (tlcPct >= 70) interp += 'Restricción LEVE.';
                 else if (tlcPct >= 60) interp += 'Restricción MODERADA.';
                 else interp += 'Restricción SEVERA.';
-                if (dlcoPct < 80) interp += ' Posible enfermedad pulmonar intersticial.';
+                if (!isNaN(dlcoPct) && dlcoPct < 80) interp += ' Posible enfermedad pulmonar intersticial.';
             } else if (patron === 'MIXTO') {
                 interp += '• <strong>PATRÓN MIXTO:</strong> Características obstructivas y restrictivas. Requiere evaluación clínica integral.';
             } else {
@@ -674,7 +696,7 @@
                         <table class="result-table">
                             <tr>
                                 <td><strong>Patrón:</strong></td>
-                                <td><span class="${getStatus(isNaN(fev1Pct) ? NaN : (fev1Pct + tlcPct) / 2)}">${patron}</span></td>
+                                <td><span class="${getStatus(isNaN(fev1Pct) ? NaN : (fev1Pct + (isNaN(tlcPct) ? fev1Pct : tlcPct)) / 2)}">${patron}</span></td>
                             </tr>
                         </table>
                     </div>
