@@ -562,16 +562,29 @@
       return 'Severo';
     }
 
-    // ===================== CORRECCIÓN CLAVE: PATRONES OBSTRUCTIVO/RESTRICTIVO/MIXTO =====================
-    function getPatron(ratio, tlcPct, hasFVC, hasFEV1) {
+    /**
+     * Patrones:
+     * - OBSTRUCTIVO: FEV1/FVC < 70
+     * - RESTRICTIVO: TLC < 80 (solo si hay TLC)
+     * - MIXTO: ambos (obstructivo y restrictivo)
+     * - SOSPECHA RESTRICTIVO: si NO obstructivo por ratio (>=70) y FVC% < 80, PERO SIN TLC
+     */
+    function getPatron(ratio, tlcPct, fvcPct, hasFVC, hasFEV1) {
       if (!hasFVC || !hasFEV1 || isNaN(ratio)) return 'NO EVALUABLE';
 
-      // Sin TLC no se puede clasificar restricción/mixto -> solo obstructivo o normal
+      const obstructivo = ratio < 70;
+
+      // Si no hay TLC: no podemos confirmar restricción verdadera
       if (isNaN(tlcPct) || tlcPct === null || tlcPct === '') {
-        return (ratio < 70) ? 'OBSTRUCTIVO' : 'NORMAL';
+        if (obstructivo) return 'OBSTRUCTIVO';
+
+        // Sospecha de restricción por FVC baja con ratio normal (no obstructivo)
+        if (!isNaN(fvcPct) && fvcPct < 80) return 'SOSPECHA RESTRICTIVO';
+
+        return 'NORMAL';
       }
 
-      const obstructivo = ratio < 70;
+      // Con TLC: clasificar restricción real / mixto
       const restrictivo = tlcPct < 80;
 
       if (obstructivo && restrictivo) return 'MIXTO';
@@ -610,6 +623,13 @@
 
       if (patron === 'MIXTO') {
         return '• <strong>PATRÓN MIXTO:</strong> Características obstructivas y restrictivas. Requiere evaluación clínica integral.';
+      }
+
+      if (patron === 'SOSPECHA RESTRICTIVO') {
+        let s = '• <strong>SOSPECHA DE PATRÓN RESTRICTIVO:</strong> FVC &lt; 80% predicho con cociente FEV1/FVC &ge; 70%. ';
+        s += 'Esto es <strong>compatible</strong> con posible restricción, pero <strong>no se confirma sin TLC</strong> (restricción verdadera requiere volúmenes pulmonares).';
+        if (!isNaN(dlcoPct) && dlcoPct < 80) s += ' DLCO disminuida puede apoyar afectación parenquimatosa u otras causas.';
+        return s;
       }
 
       return '• <strong>ESPIROMETRÍA NORMAL:</strong> Parámetros dentro de los límites normales.';
@@ -741,7 +761,8 @@
       const bd_separ = evaluarBD_SEPAR(cambio_porcentual, cambio_absoluto);
       const bd_gold = evaluarBD_GOLD(cambio_porcentual, cambio_absoluto);
 
-      const patron = getPatron(ratio, tlcPct, hasFVC, hasFEV1);
+      // ✅ CAMBIO CLAVE: pasar fvcPct para poder etiquetar SOSPECHA RESTRICTIVO sin TLC
+      const patron = getPatron(ratio, tlcPct, fvcPct, hasFVC, hasFEV1);
 
       const esp = `
         <div class="result-section">
@@ -940,7 +961,6 @@
         ` : ''}
       `;
 
-      // BD: gate por cambio%/abs calculable (como ya lo tenías corregido)
       const bd = `
         ${(!isNaN(cambio_porcentual) && !isNaN(cambio_absoluto)) ? `
           <div class="result-section">
@@ -1050,9 +1070,13 @@
         ` : ''}
       `;
 
+      // Clase visual del patrón
       const patronStatusClass = (patron === 'NO EVALUABLE')
         ? 'status-no-medido'
-        : (patron === 'NORMAL' ? 'status-normal' : (patron === 'OBSTRUCTIVO' ? 'status-severo' : 'status-moderado'));
+        : (patron === 'NORMAL' ? 'status-normal'
+          : (patron === 'OBSTRUCTIVO' ? 'status-severo'
+            : (patron === 'RESTRICTIVO' ? 'status-moderado'
+              : (patron === 'MIXTO' ? 'status-severo' : 'status-moderado'))));
 
       const html = `
         <div class="result-section">
