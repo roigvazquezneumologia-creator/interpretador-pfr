@@ -284,10 +284,6 @@
     .guide-criteria { color: #333; }
     .guide-result { font-weight: bold; text-align: right; }
 
-    .delta-grid {
-      margin-top: 6px;
-    }
-
     .toggle-icon { transition: transform 0.3s; }
     .toggle-icon.open { transform: rotate(180deg); }
 
@@ -304,30 +300,22 @@
   <div class="header">
     <div class="header-content">
       <div class="header-logo" aria-hidden="true">
-        <!-- Dibujo/ilustración vectorial: pulmones + trazo tipo curva funcional -->
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <!-- Pulmón izquierdo -->
           <ellipse cx="70" cy="112" rx="34" ry="52" fill="#4da6ff" opacity="0.9"/>
-          <!-- Pulmón derecho -->
           <ellipse cx="130" cy="112" rx="34" ry="52" fill="#2d9e63" opacity="0.9"/>
 
-          <!-- Traquea -->
           <rect x="93" y="35" width="14" height="42" fill="#ffffff" opacity="0.45" rx="4"/>
           <rect x="93" y="67" width="14" height="70" fill="#ffffff" opacity="0.35" rx="4"/>
 
-          <!-- Bronquios -->
           <line x1="100" y1="77" x2="78" y2="98" stroke="white" stroke-width="3" opacity="0.85"/>
           <line x1="100" y1="77" x2="122" y2="98" stroke="white" stroke-width="3" opacity="0.85"/>
 
-          <!-- “Curva” funcional (tipo espirometría) -->
           <path d="M45 150 C65 135, 80 135, 95 145 S125 160, 155 145"
                 fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.65"/>
 
-          <!-- Bandas de lectura/medición -->
           <circle cx="52" cy="148" r="6" fill="#ffcf5a" opacity="0.85"/>
           <circle cx="148" cy="146" r="6" fill="#ffcf5a" opacity="0.85"/>
 
-          <!-- Pequeño “corazón” (referencia clínica) -->
           <path d="M100 64
                    C92 56, 82 56, 78 64
                    C74 72, 80 80, 88 86
@@ -351,12 +339,11 @@
   </div>
 
   <div class="container">
-    <!-- PANEL IZQUIERDO: ENTRADA DE DATOS -->
+    <!-- PANEL IZQUIERDO -->
     <div class="panel">
       <div class="panel-header">📋 DATOS CLÍNICOS DE ENTRADA</div>
       <div class="panel-body">
 
-        <!-- DATOS PACIENTE -->
         <div class="section">
           <div class="section-header" onclick="toggleSection(this)">
             <span>👤 DATOS DEL PACIENTE</span>
@@ -385,7 +372,6 @@
           </div>
         </div>
 
-        <!-- ESPIROMETRÍA -->
         <div class="section">
           <div class="section-header" onclick="toggleSection(this)">
             <span>📈 ESPIROMETRÍA FORZADA</span>
@@ -423,7 +409,6 @@
           </div>
         </div>
 
-        <!-- TEST BRONCODILATADOR -->
         <div class="section">
           <div class="section-header" onclick="toggleSection(this)">
             <span>💊 TEST BRONCODILATADOR</span>
@@ -441,7 +426,6 @@
           </div>
         </div>
 
-        <!-- VOLÚMENES -->
         <div class="section">
           <div class="section-header" onclick="toggleSection(this)">
             <span>🫁 VOLÚMENES PULMONARES</span>
@@ -459,7 +443,6 @@
           </div>
         </div>
 
-        <!-- DIFUSIÓN -->
         <div class="section">
           <div class="section-header" onclick="toggleSection(this)">
             <span>💨 DIFUSIÓN PULMONAR (DLCO)</span>
@@ -480,7 +463,6 @@
           </div>
         </div>
 
-        <!-- FeNO -->
         <div class="section">
           <div class="section-header" onclick="toggleSection(this)">
             <span>🌬️ FeNO50 - ÓXIDO NÍTRICO EXHALADO</span>
@@ -493,7 +475,6 @@
           </div>
         </div>
 
-        <!-- TEST PROVOCACIÓN -->
         <div class="section">
           <div class="section-header" onclick="toggleSection(this)">
             <span>⚡ TEST PROVOCACIÓN BRONQUIAL</span>
@@ -581,16 +562,21 @@
       return 'Severo';
     }
 
+    // ===================== CORRECCIÓN CLAVE: PATRONES OBSTRUCTIVO/RESTRICTIVO/MIXTO =====================
     function getPatron(ratio, tlcPct, hasFVC, hasFEV1) {
       if (!hasFVC || !hasFEV1 || isNaN(ratio)) return 'NO EVALUABLE';
 
+      // Sin TLC no se puede clasificar restricción/mixto -> solo obstructivo o normal
       if (isNaN(tlcPct) || tlcPct === null || tlcPct === '') {
         return (ratio < 70) ? 'OBSTRUCTIVO' : 'NORMAL';
       }
 
-      if (ratio < 70) return 'OBSTRUCTIVO';
-      if (tlcPct < 80) return 'RESTRICTIVO';
-      if (ratio < 80 && tlcPct < 80) return 'MIXTO';
+      const obstructivo = ratio < 70;
+      const restrictivo = tlcPct < 80;
+
+      if (obstructivo && restrictivo) return 'MIXTO';
+      if (restrictivo) return 'RESTRICTIVO';
+      if (obstructivo) return 'OBSTRUCTIVO';
       return 'NORMAL';
     }
 
@@ -647,9 +633,7 @@
       return '<br>• <strong>FeNO50 (ATS/ERS):</strong> ' + result;
     }
 
-    /* ===================== NUEVAS FUNCIONES: COMPARAR BD 3 GUÍAS ===================== */
-    // deltaPct: cambio porcentual (ej. +12.3)
-    // deltaAbsL: cambio absoluto en litros (ej. +0.250 L)
+    /* ===================== COMPARACIÓN TEST BD 3 GUÍAS ===================== */
     function evaluarBD_ATS_ERS(deltaPct, deltaAbsL) {
       if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
         return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
@@ -662,33 +646,22 @@
     }
 
     function evaluarBD_SEPAR(deltaPct, deltaAbsL) {
-      // Implementación con 2 niveles (“positiva” y “muy positiva”) siguiendo el uso práctico en SEPAR/GesEPOC:
-      // - Positiva: >12% y >200 mL
-      // - Muy positiva: >15% y >400 mL
       if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
         return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
       }
-
       const abs_mL = deltaAbsL * 1000;
       const positiva = (deltaPct > 12 && abs_mL > 200);
       const muyPos = (deltaPct > 15 && abs_mL > 400);
 
-      if (muyPos) {
-        return { estado: 'MUY POSITIVA (>15% y >400 mL)', clase: 'status-severo' };
-      }
-      if (positiva) {
-        return { estado: 'POSITIVA (>12% y >200 mL)', clase: 'status-moderado' };
-      }
+      if (muyPos) return { estado: 'MUY POSITIVA (>15% y >400 mL)', clase: 'status-severo' };
+      if (positiva) return { estado: 'POSITIVA (>12% y >200 mL)', clase: 'status-moderado' };
       return { estado: 'NEGATIVA', clase: 'status-normal' };
     }
 
     function evaluarBD_GOLD(deltaPct, deltaAbsL) {
-      // GOLD 2023: la reversibilidad NO se recomienda como criterio para guiar decisión/diagnóstico
-      // -> aquí la mostramos como “dato compatible” con cautela.
       if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
         return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
       }
-
       const abs_mL = deltaAbsL * 1000;
 
       const compatibleMarcada = (deltaPct >= 15 && abs_mL >= 400);
@@ -747,7 +720,6 @@
       const hasFVC = !isNaN(fvc);
       const hasFEV1 = !isNaN(fev1);
 
-      // Predichos (GLI 2012)
       const pred = calcularGLI2012(edad, sexo, altura);
 
       const fev1Pct = (!isNaN(fev1) && !isNaN(pred.fev1)) ? (fev1 / pred.fev1 * 100) : NaN;
@@ -760,20 +732,17 @@
 
       const ratio = (!isNaN(fev1) && !isNaN(fvc) && fvc !== 0) ? (fev1 / fvc * 100) : NaN;
 
-      // Cambios BD (según tu formulario: FEV1 pre y post)
       const cambio_absoluto = (!isNaN(fev1_post) && !isNaN(fev1)) ? (fev1_post - fev1) : NaN; // L
       const cambio_porcentual = (!isNaN(cambio_absoluto) && !isNaN(fev1) && fev1 !== 0)
         ? (cambio_absoluto / fev1 * 100)
         : NaN;
 
-      // Evaluación por guías (se puede calcular aunque luego el bloque no se muestre si no es evaluable)
       const bd_atsers = evaluarBD_ATS_ERS(cambio_porcentual, cambio_absoluto);
       const bd_separ = evaluarBD_SEPAR(cambio_porcentual, cambio_absoluto);
       const bd_gold = evaluarBD_GOLD(cambio_porcentual, cambio_absoluto);
 
       const patron = getPatron(ratio, tlcPct, hasFVC, hasFEV1);
 
-      // ===================== ESPIROMETRÍA =====================
       const esp = `
         <div class="result-section">
           <div class="result-section-header">📈 ESPIROMETRÍA (GLI 2012)</div>
@@ -866,7 +835,6 @@
         </div>
       `;
 
-      // ===================== VOLUMENES =====================
       const vol = `
         ${(!isNaN(tlc) || !isNaN(rv_tlc)) ? `
           <div class="result-section">
@@ -900,7 +868,6 @@
         ` : ''}
       `;
 
-      // ===================== DLCO =====================
       const diff = `
         ${(!isNaN(dlco_sb) || !isNaN(kco_c) || !isNaN(va_sb) || !isNaN(vc_max) || !isNaN(hb)) ? `
           <div class="result-section">
@@ -973,13 +940,12 @@
         ` : ''}
       `;
 
-      // ===================== BD (MODIFICADO: gate por cambio %/abs calculables + comparador 3 guías) =====================
+      // BD: gate por cambio%/abs calculable (como ya lo tenías corregido)
       const bd = `
         ${(!isNaN(cambio_porcentual) && !isNaN(cambio_absoluto)) ? `
           <div class="result-section">
             <div class="result-section-header">💊 TEST BRONCODILATADOR ${farmaco_bd ? '(' + farmaco_bd + ')' : ''}</div>
             <div class="result-section-body">
-
               <table class="result-table">
                 <tbody>
                   <tr>
@@ -1035,7 +1001,6 @@
         ` : '' }
       `;
 
-      // ===================== FeNO =====================
       const feno = `
         ${!isNaN(feno50) ? `
           <div class="result-section">
@@ -1058,7 +1023,6 @@
         ` : ''}
       `;
 
-      // ===================== Provocación =====================
       const prov = `
         ${(pc20 || pd20) ? `
           <div class="result-section">
@@ -1086,7 +1050,6 @@
         ` : ''}
       `;
 
-      // Patrón visual
       const patronStatusClass = (patron === 'NO EVALUABLE')
         ? 'status-no-medido'
         : (patron === 'NORMAL' ? 'status-normal' : (patron === 'OBSTRUCTIVO' ? 'status-severo' : 'status-moderado'));
