@@ -514,15 +514,11 @@
         }
         
         function limpiarFormulario() {
-            // Obtener todos los inputs y selects del formulario
             const inputs = document.querySelectorAll('input[type="text"], input[type="number"], select');
-            
-            // Limpiar cada uno
             inputs.forEach(input => {
                 input.value = '';
             });
             
-            // Limpiar resultados
             document.getElementById('resultados').innerHTML = `
                 <p style="text-align: center; color: #999; padding: 60px 20px;">
                     ✓ Completa los datos y haz clic en ANALIZAR<br>
@@ -563,20 +559,6 @@
             if (pct >= 70) return 'Leve';
             if (pct >= 60) return 'Moderado';
             return 'Severo';
-        }
-        
-        function formatValue(value) {
-            if (isNaN(value) || value === null || value === '') {
-                return 'No medido';
-            }
-            return value.toFixed(2);
-        }
-        
-        function formatPercent(value) {
-            if (isNaN(value) || value === null || value === '') {
-                return 'No medido';
-            }
-            return value.toFixed(1) + '%';
         }
         
         function getPatron(ratio, tlcPct) {
@@ -642,7 +624,6 @@
             const pif = parseFloat(document.getElementById('pif').value) || NaN;
             const pim = parseFloat(document.getElementById('pim').value) || NaN;
             const pem = parseFloat(document.getElementById('pem').value) || NaN;
-            const fef2575 = parseFloat(document.getElementById('fef2575').value) || NaN;
             
             const fev1_post = parseFloat(document.getElementById('fev1_post').value) || NaN;
             const farmaco_bd = document.getElementById('farmaco_bd').value;
@@ -705,13 +686,13 @@
                         <table class="result-table">
                             <thead><tr><th>Parámetro</th><th>Medido</th><th>Predicho</th><th>%</th><th>Severidad</th></tr></thead>
                             <tbody>
-                                <tr><td>FVC</td><td>${isNaN(fvc) ? 'No medido' : fvc.toFixed(2) + 'L'}</td><td>${isNaN(fvc) ? 'No medido' : pred.fvc.toFixed(2)}</td><td><span class="${getStatus(fvcPct)}">${formatPercent(fvcPct)}</span></td><td><span class="${getStatus(fvcPct)}">${getSeveridad(fvcPct)}</span></td></tr>
-                                <tr><td>FEV1</td><td>${isNaN(fev1) ? 'No medido' : fev1.toFixed(2) + 'L'}</td><td>${isNaN(fev1) ? 'No medido' : pred.fev1.toFixed(2)}</td><td><span class="${getStatus(fev1Pct)}">${formatPercent(fev1Pct)}</span></td><td><span class="${getStatus(fev1Pct)}">${getSeveridad(fev1Pct)}</span></td></tr>
-                                <tr><td>FEV1/FVC</td><td colspan="3">${isNaN(ratio) ? 'No medido' : ratio.toFixed(1) + '%'}</td><td><span class="${isNaN(ratio) ? 'status-no-medido' : ratio < 70 ? 'status-severo' : 'status-normal'}">${isNaN(ratio) ? 'No medido' : ratio < 70 ? 'Anormal' : 'Normal'}</span></td></tr>
-                                <tr><td>PEF</td><td>${isNaN(pef) ? 'No medido' : pef.toFixed(2)}</td><td>8.0-9.0</td><td>${isNaN(pef) ? 'No medido' : (pef/8.5*100).toFixed(0) + '%'}</td><td><span class="${pef >= 7 ? 'status-normal' : 'status-severo'}">${isNaN(pef) ? 'No medido' : pef >= 7 ? 'Normal' : 'Bajo'}</span></td></tr>
-                                <tr><td>PIF</td><td>${isNaN(pif) ? 'No medido' : pif.toFixed(2) + 'L/s'}</td><td>7.0-8.5</td><td>${isNaN(pif) ? 'No medido' : (pif/7.5*100).toFixed(0) + '%'}</td><td><span class="${pif >= 6 ? 'status-normal' : 'status-severo'}">${isNaN(pif) ? 'No medido' : pif >= 6 ? 'Normal' : 'Bajo'}</span></td></tr>
-                                <tr><td>PIM</td><td>${isNaN(pim) ? 'No medido' : pim.toFixed(1) + 'cmH₂O/L/s'}</td><td>80-110</td><td>${isNaN(pim) ? 'No medido' : (pim/95*100).toFixed(0) + '%'}</td><td><span class="${pim >= 70 ? 'status-normal' : 'status-severo'}">${isNaN(pim) ? 'No medido' : pim >= 70 ? 'Normal' : 'Bajo'}</span></td></tr>
-                                <tr><td>PEM</td><td>${isNaN(pem) ? 'No medido' : pem.toFixed(1) + 'cmH₂O/L/s'}</td><td>100-140</td><td>${isNaN(pem) ? 'No medido' : (pem/120*100).toFixed(0) + '%'}</td><td><span class="${pem >= 80 ? 'status-normal' : 'status-severo'}">${isNaN(pem) ? 'No medido' : pem >= 80 ? 'Normal' : 'Bajo'}</span></td></tr>
+                                ${!isNaN(fvc) ? `<tr><td>FVC</td><td>${fvc.toFixed(2)}L</td><td>${pred.fvc.toFixed(2)}</td><td><span class="${getStatus(fvcPct)}">${fvcPct.toFixed(1)}%</span></td><td><span class="${getStatus(fvcPct)}">${getSeveridad(fvcPct)}</span></td></tr>` : ''}
+                                ${!isNaN(fev1) ? `<tr><td>FEV1</td><td>${fev1.toFixed(2)}L</td><td>${pred.fev1.toFixed(2)}</td><td><span class="${getStatus(fev1Pct)}">${fev1Pct.toFixed(1)}%</span></td><td><span class="${getStatus(fev1Pct)}">${getSeveridad(fev1Pct)}</span></td></tr>` : ''}
+                                ${!isNaN(fev1) && !isNaN(fvc) ? `<tr><td>FEV1/FVC</td><td colspan="3">${ratio.toFixed(1)}%</td><td><span class="${ratio < 70 ? 'status-severo' : 'status-normal'}">${ratio < 70 ? 'Anormal' : 'Normal'}</span></td></tr>` : ''}
+                                ${!isNaN(pef) ? `<tr><td>PEF</td><td>${pef.toFixed(2)}L/s</td><td>8.0-9.0</td><td>${(pef/8.5*100).toFixed(0)}%</td><td><span class="${pef >= 7 ? 'status-normal' : 'status-severo'}">${pef >= 7 ? 'Normal' : 'Bajo'}</span></td></tr>` : ''}
+                                ${!isNaN(pif) ? `<tr><td>PIF</td><td>${pif.toFixed(2)}L/s</td><td>7.0-8.5</td><td>${(pif/7.5*100).toFixed(0)}%</td><td><span class="${pif >= 6 ? 'status-normal' : 'status-severo'}">${pif >= 6 ? 'Normal' : 'Bajo'}</span></td></tr>` : ''}
+                                ${!isNaN(pim) ? `<tr><td>PIM</td><td>${pim.toFixed(1)}cmH₂O/L/s</td><td>80-110</td><td>${(pim/95*100).toFixed(0)}%</td><td><span class="${pim >= 70 ? 'status-normal' : 'status-severo'}">${pim >= 70 ? 'Normal' : 'Bajo'}</span></td></tr>` : ''}
+                                ${!isNaN(pem) ? `<tr><td>PEM</td><td>${pem.toFixed(1)}cmH₂O/L/s</td><td>100-140</td><td>${(pem/120*100).toFixed(0)}%</td><td><span class="${pem >= 80 ? 'status-normal' : 'status-severo'}">${pem >= 80 ? 'Normal' : 'Bajo'}</span></td></tr>` : ''}
                             </tbody>
                         </table>
                     </div>
@@ -722,37 +703,41 @@
                     <div class="result-section-header">💊 TEST BRONCODILATADOR ${farmaco_bd ? '(' + farmaco_bd + ')' : ''}</div>
                     <div class="result-section-body">
                         <table class="result-table">
-                            <tr><td><strong>Cambio FEV1:</strong></td><td>${isNaN(cambio_absoluto) ? 'No medido' : cambio_absoluto.toFixed(2) + 'L (' + cambio_porcentual.toFixed(1) + '%)'}</td><td><span class="${cambio_porcentual >= 12 ? 'status-severo' : 'status-normal'}">${respuesta_bd}</span></td></tr>
+                            <tr><td><strong>Cambio FEV1:</strong></td><td>${cambio_absoluto.toFixed(2)}L (${cambio_porcentual.toFixed(1)}%)</td><td><span class="${cambio_porcentual >= 12 ? 'status-severo' : 'status-normal'}">${respuesta_bd}</span></td></tr>
                         </table>
                     </div>
                 </div>
                 ` : ''}
                 
+                ${!isNaN(tlc) || !isNaN(rv_tlc) ? `
                 <div class="result-section">
                     <div class="result-section-header">🫁 VOLÚMENES PULMONARES</div>
                     <div class="result-section-body">
                         <table class="result-table">
-                            <tr><td>TLC</td><td>${isNaN(tlc) ? 'No medido' : tlc.toFixed(2) + 'L'}</td><td>${isNaN(tlc) ? 'No medido' : pred.tlc.toFixed(2)}</td><td><span class="${getStatus(tlcPct)}">${formatPercent(tlcPct)}</span></td><td><span class="${getStatus(tlcPct)}">${getSeveridad(tlcPct)}</span></td></tr>
-                            <tr><td>RV/TLC</td><td>${isNaN(rv_tlc) ? 'No medido' : rv_tlc.toFixed(1) + '%'}</td><td>30-35%</td><td><span class="${rv_tlc <= 35 ? 'status-normal' : 'status-moderado'}">${isNaN(rv_tlc) ? 'No medido' : rv_tlc <= 35 ? 'Normal' : 'Elevado'}</span></td></tr>
+                            ${!isNaN(tlc) ? `<tr><td>TLC</td><td>${tlc.toFixed(2)}L</td><td>${pred.tlc.toFixed(2)}</td><td><span class="${getStatus(tlcPct)}">${tlcPct.toFixed(1)}%</span></td><td><span class="${getStatus(tlcPct)}">${getSeveridad(tlcPct)}</span></td></tr>` : ''}
+                            ${!isNaN(rv_tlc) ? `<tr><td>RV/TLC</td><td>${rv_tlc.toFixed(1)}%</td><td>30-35%</td><td><span class="${rv_tlc <= 35 ? 'status-normal' : 'status-moderado'}">${rv_tlc <= 35 ? 'Normal' : 'Elevado'}</span></td></tr>` : ''}
                         </table>
                     </div>
                 </div>
+                ` : ''}
                 
+                ${!isNaN(dlco_sb) || !isNaN(kco_c) || !isNaN(va_sb) || !isNaN(vc_max) || !isNaN(hb) ? `
                 <div class="result-section">
                     <div class="result-section-header">💨 DIFUSIÓN PULMONAR</div>
                     <div class="result-section-body">
                         <table class="result-table">
                             <thead><tr><th>Parámetro</th><th>Medido</th><th>Predicho</th><th>%</th><th>Severidad</th></tr></thead>
                             <tbody>
-                                <tr><td>DLCO_SB</td><td>${isNaN(dlco_sb) ? 'No medido' : dlco_sb.toFixed(1) + 'L'}</td><td>${isNaN(dlco_sb) ? 'No medido' : pred.dlco.toFixed(1)}</td><td><span class="${getStatus(dlcoPct)}">${formatPercent(dlcoPct)}</span></td><td><span class="${getStatus(dlcoPct)}">${getSeveridad(dlcoPct)}</span></td></tr>
-                                <tr><td>KCO_C</td><td>${isNaN(kco_c) ? 'No medido' : kco_c.toFixed(2) + 'L'}</td><td>4.0-5.5</td><td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${formatPercent(kco_cPct)}</span></td><td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${isNaN(kco_c) ? 'No medido' : kco_c >= 4 ? 'Normal' : 'Bajo'}</span></td></tr>
-                                <tr><td>VA_SB</td><td>${isNaN(va_sb) ? 'No medido' : va_sb.toFixed(2) + 'L'}</td><td>-</td><td>-</td><td>-</td></tr>
-                                <tr><td>VC_MAX</td><td>${isNaN(vc_max) ? 'No medido' : vc_max.toFixed(2) + 'L'}</td><td>-</td><td>-</td><td>-</td></tr>
-                                <tr><td>Hemoglobina</td><td>${isNaN(hb) ? 'No medido' : hb.toFixed(1) + 'g/dL'}</td><td>13.5-17.5</td><td>${isNaN(hb) ? 'No medido' : (hb/15.5*100).toFixed(0) + '%'}</td><td><span class="${hb >= 13.5 ? 'status-normal' : 'status-severo'}">${isNaN(hb) ? 'No medido' : hb >= 13.5 ? 'Normal' : 'Bajo'}</span></td></tr>
+                                ${!isNaN(dlco_sb) ? `<tr><td>DLCO_SB</td><td>${dlco_sb.toFixed(1)}L</td><td>${pred.dlco.toFixed(1)}</td><td><span class="${getStatus(dlcoPct)}">${dlcoPct.toFixed(1)}%</span></td><td><span class="${getStatus(dlcoPct)}">${getSeveridad(dlcoPct)}</span></td></tr>` : ''}
+                                ${!isNaN(kco_c) ? `<tr><td>KCO_C</td><td>${kco_c.toFixed(2)}L</td><td>4.0-5.5</td><td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${kco_cPct.toFixed(0)}%</span></td><td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${kco_c >= 4 ? 'Normal' : 'Bajo'}</span></td></tr>` : ''}
+                                ${!isNaN(va_sb) ? `<tr><td>VA_SB</td><td>${va_sb.toFixed(2)}L</td><td>-</td><td>-</td><td>-</td></tr>` : ''}
+                                ${!isNaN(vc_max) ? `<tr><td>VC_MAX</td><td>${vc_max.toFixed(2)}L</td><td>-</td><td>-</td><td>-</td></tr>` : ''}
+                                ${!isNaN(hb) ? `<tr><td>Hemoglobina</td><td>${hb.toFixed(1)}g/dL</td><td>13.5-17.5</td><td>${(hb/15.5*100).toFixed(0)}%</td><td><span class="${hb >= 13.5 ? 'status-normal' : 'status-severo'}">${hb >= 13.5 ? 'Normal' : 'Bajo'}</span></td></tr>` : ''}
                             </tbody>
                         </table>
                     </div>
                 </div>
+                ` : ''}
                 
                 ${!isNaN(feno50) ? `
                 <div class="result-section">
