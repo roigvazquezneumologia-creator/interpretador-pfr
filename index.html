@@ -1,1204 +1,652 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ANALIZADOR DE PRUEBAS FUNCIONALES RESPIRATORIAS</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ATS clásico + z-scores — PRE/POST (FEV1/FVC, volúmenes y difusión)</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #ecf0f1;
-      color: #2c3e50;
+    :root{
+      --bg:#0b1220;
+      --card:rgba(18,27,49,0.85);
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --accent:#60a5fa;
+      --line:#223055;
+      --bad:#fb7185;
     }
-
-    /* ===================== BANNER ELEGANTE ===================== */
-    .header {
-      background: linear-gradient(135deg, #0d47a1 0%, #1a5276 45%, #1b7c4f 100%);
-      color: white;
-      padding: 26px 20px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: linear-gradient(180deg, #070b14, var(--bg));
+      color:var(--text);
     }
-    .header.no-print { /* solo para print */ }
-
-    .header-content {
-      max-width: 1900px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      gap: 22px;
+    header{
+      padding:20px 16px;
+      border-bottom:1px solid var(--line);
+      background: rgba(18,27,49,0.55);
+      backdrop-filter: blur(6px);
     }
-
-    .header-logo {
-      width: 96px;
-      height: 96px;
-      flex-shrink: 0;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.20);
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    header h1{ margin:0; font-size:18px; letter-spacing:0.2px;}
+    header p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
     }
-
-    .header-logo svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+    main{
+      max-width:1200px; margin:18px auto; padding:0 14px 26px;
+      display:grid; gap:14px; grid-template-columns: 1fr 0.95fr;
     }
-
-    .header-text h1 {
-      font-size: 28px;
-      margin-bottom: 6px;
-      font-weight: 800;
-      letter-spacing: 0.3px;
+    @media (max-width: 980px){ main{ grid-template-columns: 1fr; } }
+    .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
-
-    .header-author {
-      font-size: 12px;
-      opacity: 0.98;
-      font-weight: 500;
-      line-height: 1.6;
+    .card h2{ margin:0 0 10px; font-size:14px; color:#dbeafe; font-weight:900; }
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .grid3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+    .form-group label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input{
+      width:100%;
+      border-radius:10px;
+      border:1px solid #2a3a66;
+      background: rgba(6,10,20,0.45);
+      color: var(--text);
+      padding:10px 10px;
+      outline:none;
+      font-size:13px;
     }
-
-    /* ===================== LAYOUT ===================== */
-    .container {
-      display: grid;
-      grid-template-columns: 40% 60%;
-      gap: 20px;
-      padding: 20px;
-      max-width: 1900px;
-      margin: 0 auto;
+    input::placeholder{ color:#64748b; }
+    .block{
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background: rgba(11,18,32,0.35);
+      margin-top:12px;
     }
-
-    .panel {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+    .block h3{ margin:0 0 8px; font-size:13px; color:#e2e8f0; }
+    .hint{ color:var(--muted); font-size:12px; margin-top:8px; line-height:1.35; }
+    .lines{ color:#d1d5db; font-size:13px; line-height:1.45; white-space:pre-wrap; }
+    .kpi{
+      display:grid; grid-template-columns: 1fr 1fr; gap:10px;
     }
-
-    .panel.no-print { /* solo para print */ }
-
-    .panel-header {
-      background: #1a5276;
-      color: white;
-      padding: 15px 20px;
-      font-weight: bold;
-      font-size: 13px;
+    .kpi .item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      background: rgba(11,18,32,0.25);
     }
-
-    .panel-body {
-      padding: 20px;
-      overflow-y: auto;
-      flex: 1;
-      max-height: calc(100vh - 150px);
+    .kpi .lab{ color:var(--muted); font-size:12px; }
+    .kpi .val{ font-weight:950; font-size:16px; margin-top:6px; }
+    table{ width:100%; border-collapse: collapse; overflow:auto; border-radius:12px; border:1px solid var(--line);
+      background: rgba(6,10,20,0.25); }
+    th, td{ padding:10px; border-bottom:1px solid rgba(34,48,85,0.7); font-size:13px; text-align:left; }
+    th{ color:#93c5fd; font-weight:900; background: rgba(96,165,250,0.08); }
+    tr:last-child td{ border-bottom:0; }
+    .btnbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    button{
+      border:0; border-radius:12px; padding:10px 12px;
+      background: var(--accent); color:#061021; font-weight:950; cursor:pointer;
     }
-
-    .section {
-      margin-bottom: 12px;
-      border: 1px solid #bdc3c7;
-      border-radius: 5px;
-      overflow: hidden;
-      background: white;
+    button.secondary{
+      background: rgba(96,165,250,0.12);
+      border:1px solid rgba(96,165,250,0.35);
+      color:var(--accent);
     }
-
-    .section-header {
-      background: #34495e;
-      color: white;
-      padding: 10px 12px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 11px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
+    button.danger{
+      background: rgba(251,113,133,0.12);
+      border:1px solid rgba(251,113,133,0.35);
+      color:var(--bad);
     }
-
-    .section-header:hover {
-      background: #2c3e50;
-    }
-
-    .section-content {
-      display: none;
-      padding: 12px;
-      background: #f8f9fa;
-    }
-    .section-content.show { display: block; }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .form-row.full { grid-template-columns: 1fr; }
-
-    .form-group { display: flex; flex-direction: column; }
-
-    .form-group label {
-      font-size: 9px;
-      font-weight: bold;
-      color: #555;
-      margin-bottom: 3px;
-      text-transform: uppercase;
-    }
-
-    .form-group input,
-    .form-group select {
-      padding: 7px;
-      border: 1px solid #bdc3c7;
-      border-radius: 4px;
-      font-size: 11px;
-      background: white;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus {
-      outline: none;
-      border-color: #1a5276;
-      box-shadow: 0 0 0 2px rgba(26,82,118,0.1);
-    }
-
-    .buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 15px;
-      background: #ecf0f1;
-      border-top: 1px solid #bdc3c7;
-    }
-
-    button {
-      padding: 11px;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 11px;
-      transition: all 0.3s;
-    }
-
-    .btn-analizar { background: #27ae60; color: white; }
-    .btn-analizar:hover { background: #229954; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(39,174,96,0.3); }
-
-    .btn-limpiar { background: #95a5a6; color: white; }
-    .btn-limpiar:hover { background: #7f8c8d; }
-
-    /* ===================== RESULTADOS ===================== */
-    .result-section {
-      margin-bottom: 15px;
-      border: 1px solid #bdc3c7;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-
-    .result-section-header {
-      background: #1a5276;
-      color: white;
-      padding: 10px 12px;
-      font-weight: bold;
-      font-size: 11px;
-    }
-
-    .result-section-body { padding: 12px; background: white; }
-
-    .result-table {
-      width: 100%;
-      font-size: 10px;
-      border-collapse: collapse;
-    }
-
-    .result-table th {
-      background: #ecf0f1;
-      padding: 6px;
-      text-align: left;
-      border-bottom: 1px solid #bdc3c7;
-      font-weight: bold;
-    }
-
-    .result-table td {
-      padding: 6px;
-      border-bottom: 1px solid #ecf0f1;
-    }
-
-    .result-table tr:hover { background: #f8f9fa; }
-
-    .status-normal { background: #d5f4e6; color: #0e6251; padding: 2px 5px; border-radius: 3px; font-weight: bold; font-size: 9px; }
-    .status-leve { background: #ffeaa7; color: #7d6608; padding: 2px 5px; border-radius: 3px; font-weight: bold; font-size: 9px; }
-    .status-moderado { background: #fdcb6e; color: #b7860b; padding: 2px 5px; border-radius: 3px; font-weight: bold; font-size: 9px; }
-    .status-severo { background: #fab1a0; color: #922b21; padding: 2px 5px; border-radius: 3px; font-weight: bold; font-size: 9px; }
-    .status-no-medido { background: #d5dbdb; color: #555; padding: 2px 5px; border-radius: 3px; font-weight: bold; font-size: 9px; }
-
-    .interpretation-box {
-      background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
-      border-left: 4px solid #f39c12;
-      padding: 12px;
-      margin-top: 15px;
-      border-radius: 5px;
-    }
-
-    .interpretation-box h4 { color: #d68910; margin-bottom: 8px; font-size: 11px; font-weight: bold; }
-    .interpretation-box p { font-size: 10px; line-height: 1.6; color: #7d6608; margin-bottom: 5px; }
-
-    .guideline-ref {
-      font-size: 9px;
-      color: #555;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid #bdc3c7;
-    }
-
-    .guideline-ref em { color: #1a5276; font-weight: 500; }
-
-    /* ===================== COMPARADOR BD ===================== */
-    .guide-comparison {
-      background: #f0f7ff;
-      border: 1px solid #c5d9f7;
-      border-radius: 5px;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 9px;
-    }
-
-    .guide-row {
-      display: grid;
-      grid-template-columns: 1fr 2fr 2fr;
-      gap: 8px;
-      margin-bottom: 8px;
-      padding: 8px;
-      background: white;
-      border-radius: 3px;
-      border-left: 3px solid #0d47a1;
-    }
-
-    .guide-name {
-      font-weight: bold;
-      color: #0d47a1;
-      min-width: 100px;
-    }
-
-    .guide-criteria { color: #333; }
-    .guide-result { font-weight: bold; text-align: right; }
-
-    .toggle-icon { transition: transform 0.3s; }
-    .toggle-icon.open { transform: rotate(180deg); }
-
-    @media (max-width: 1400px) {
-      .container { grid-template-columns: 1fr; }
-      .panel-body { max-height: auto; }
-      .header-content { flex-direction: column; text-align: center; }
-      .guide-row { grid-template-columns: 1fr; }
-    }
-
-    /* ===================== PESTAÑAS PDF (NO AUTOMÁTICO) ===================== */
-    .tabbar{
-      display:flex;
-      gap:10px;
-      padding: 10px 15px;
-      border-bottom: 1px solid #bdc3c7;
-      background: #ecf0f1;
-    }
-    .tab-btn{
-      border: 1px solid #c5d9f7;
-      background: #ffffff;
-      color: #0d47a1;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 11px;
-    }
-    .tab-btn:hover{ background:#f0f7ff; }
-
-    .tab-btn-primary{
-      background:#0d47a1;
-      color:#fff;
-      border-color:#0d47a1;
-    }
-    .tab-btn-primary:hover{ background:#083a7e; }
-
-    /* Ocultamos pestañas/inputs solo en modo impresión */
-    @media print {
-      @page { size: auto; margin: 12mm; }
-
-      .no-print { display: none !important; }
-
-      body {
-        background: #fff !important;
-        color: #000 !important;
-      }
-
-      .panel {
-        box-shadow: none !important;
-      }
-
-      /* Asegurar que no se corte */
-      .panel-body {
-        max-height: none !important;
-        overflow: visible !important;
-      }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+    footer{
+      max-width:1200px; margin:0 auto; padding:0 14px 18px;
+      color:var(--muted); font-size:12px; line-height:1.35;
     }
   </style>
 </head>
 
 <body>
-  <div class="header no-print">
-    <div class="header-content">
-      <div class="header-logo" aria-hidden="true">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="70" cy="112" rx="34" ry="52" fill="#4da6ff" opacity="0.9"/>
-          <ellipse cx="130" cy="112" rx="34" ry="52" fill="#2d9e63" opacity="0.9"/>
+<header>
+  <h1>Interpretación (ATS clásico) + z-scores — PRE/POST (FEV1/FVC, volúmenes y difusión)</h1>
+  <p>
+    <b>Obstrucción:</b> FEV1/FVC &lt; <span class="mono">0.70</span> + severidad por FEV1%pred:
+    Leve ≥70, Moderado 60–69, Moderadamente grave 50–59, Grave 35–49, Muy grave &lt;35.<br/>
+    <b>Broncodilatador ATS:</b> Δ≥12% y ≥200 mL en <b>FEV1 o FVC</b>, y además <b>Δz</b> si hay z-score POST.<br/>
+    <b>Gradación por z-score (tu regla):</b> Leve si $z>-2.5$; Moderada si $-4.0 \le z \le -2.5$; Grave si $z<-4.0$.
+  </p>
+</header>
 
-          <rect x="93" y="35" width="14" height="42" fill="#ffffff" opacity="0.45" rx="4"/>
-          <rect x="93" y="67" width="14" height="70" fill="#ffffff" opacity="0.35" rx="4"/>
+<main>
+  <!-- INPUTS -->
+  <section class="card">
+    <h2>Datos Vintus One — PRE</h2>
 
-          <line x1="100" y1="77" x2="78" y2="98" stroke="white" stroke-width="3" opacity="0.85"/>
-          <line x1="100" y1="77" x2="122" y2="98" stroke="white" stroke-width="3" opacity="0.85"/>
-
-          <path d="M45 150 C65 135, 80 135, 95 145 S125 160, 155 145"
-                fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.65"/>
-
-          <circle cx="52" cy="148" r="6" fill="#ffcf5a" opacity="0.85"/>
-          <circle cx="148" cy="146" r="6" fill="#ffcf5a" opacity="0.85"/>
-
-          <path d="M100 64
-                   C92 56, 82 56, 78 64
-                   C74 72, 80 80, 88 86
-                   C94 90, 100 96, 100 96
-                   C100 96, 106 90, 112 86
-                   C120 80, 126 72, 122 64
-                   C118 56, 108 56, 100 64 Z"
-                fill="#ff6b9d" opacity="0.7"/>
-        </svg>
+    <div class="grid3">
+      <div class="form-group">
+        <label>FEV1 (L) PRE</label>
+        <input id="pre_fev1_L" type="number" step="0.01" placeholder="Ej: 2.05" />
       </div>
-
-      <div class="header-text">
-        <h1>🫁 ANALIZADOR DE PRUEBAS FUNCIONALES RESPIRATORIAS</h1>
-        <div class="header-author">
-          <strong>Especialidad:</strong> Neumología Clínica<br>
-          <strong>Autor:</strong> Dr. Francisco Jose Roig Vázquez<br>
-          <strong>Estándares:</strong> ATS/ERS 2005 • SEPAR 2013 • GOLD 2023 • GLI 2012
-        </div>
+      <div class="form-group">
+        <label>FVC (L) PRE</label>
+        <input id="pre_fvc_L" type="number" step="0.01" placeholder="Ej: 2.57" />
       </div>
-    </div>
-  </div>
-
-  <div class="container">
-    <!-- PANEL IZQUIERDO: ENTRADA -->
-    <div class="panel no-print">
-      <div class="panel-header">📋 DATOS CLÍNICOS DE ENTRADA</div>
-      <div class="panel-body">
-
-        <div class="section">
-          <div class="section-header" onclick="toggleSection(this)">
-            <span>👤 DATOS DEL PACIENTE</span>
-            <span class="toggle-icon open">▼</span>
-          </div>
-          <div class="section-content show">
-            <div class="form-row">
-              <div class="form-group"><label>ID Paciente</label><input type="text" id="id_paciente" placeholder="Ej: PFR-001"></div>
-              <div class="form-group"><label>Nombre</label><input type="text" id="nombre" placeholder="Apellido, Nombre"></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>Edad</label><input type="number" id="edad" placeholder="Ej: 55" min="18" max="100"></div>
-              <div class="form-group">
-                <label>Sexo</label>
-                <select id="sexo">
-                  <option value="">Seleccionar</option>
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>Altura (cm)</label><input type="number" id="altura" placeholder="Ej: 175" min="140"></div>
-              <div class="form-group"><label>Peso (kg)</label><input type="number" id="peso" placeholder="Ej: 75" min="40"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header" onclick="toggleSection(this)">
-            <span>📈 ESPIROMETRÍA FORZADA</span>
-            <span class="toggle-icon open">▼</span>
-          </div>
-          <div class="section-content show">
-            <div class="form-row">
-              <div class="form-group"><label>FVC (L)</label><input type="number" id="fvc" placeholder="Ej: 4.20" step="0.01"></div>
-              <div class="form-group"><label>FEV1 (L)</label><input type="number" id="fev1" placeholder="Ej: 2.10" step="0.01"></div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group"><label>FEV0.5 (L)</label><input type="number" id="fev05" placeholder="Ej: 1.50" step="0.01"></div>
-              <div class="form-group"><label>FEV0.75 (L)</label><input type="number" id="fev075" placeholder="Ej: 1.80" step="0.01"></div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group"><label>PEF (L/s)</label><input type="number" id="pef" placeholder="Ej: 8.50" step="0.01"></div>
-              <div class="form-group"><label>PIF (L/s)</label><input type="number" id="pif" placeholder="Ej: 7.50" step="0.01"></div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group"><label>FEF75 (L/s)</label><input type="number" id="fef75" placeholder="Ej: 6.20" step="0.01"></div>
-              <div class="form-group"><label>FEF50 (L/s)</label><input type="number" id="fef50" placeholder="Ej: 2.80" step="0.01"></div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group"><label>FEF25-75 (L/s)</label><input type="number" id="fef2575" placeholder="Ej: 0.85" step="0.01"></div>
-              <div class="form-group"><label>PIM (cmH₂O/L/s)</label><input type="number" id="pim" placeholder="Ej: 95.0" step="0.1"></div>
-            </div>
-
-            <div class="form-row full">
-              <div class="form-group"><label>PEM (cmH₂O/L/s)</label><input type="number" id="pem" placeholder="Ej: 125.0" step="0.1"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header" onclick="toggleSection(this)">
-            <span>💊 TEST BRONCODILATADOR</span>
-            <span class="toggle-icon">▼</span>
-          </div>
-          <div class="section-content">
-            <div class="form-row">
-              <div class="form-group"><label>Fármaco</label><input type="text" id="farmaco_bd" placeholder="Ej: Salbutamol 400µg"></div>
-              <div class="form-group"><label>Tiempo (min)</label><input type="number" id="tiempo_bd" placeholder="Ej: 15"></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>FEV1 Post-BD (L)</label><input type="number" id="fev1_post" placeholder="Ej: 2.50" step="0.01"></div>
-              <div class="form-group"><label>FVC Post-BD (L)</label><input type="number" id="fvc_post" placeholder="Ej: 4.35" step="0.01"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header" onclick="toggleSection(this)">
-            <span>🫁 VOLÚMENES PULMONARES</span>
-            <span class="toggle-icon">▼</span>
-          </div>
-          <div class="section-content">
-            <div class="form-row">
-              <div class="form-group"><label>TLC (L)</label><input type="number" id="tlc" placeholder="Ej: 6.20" step="0.1"></div>
-              <div class="form-group"><label>FRC (L)</label><input type="number" id="frc" placeholder="Ej: 3.00" step="0.1"></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>RV (L)</label><input type="number" id="rv" placeholder="Ej: 2.20" step="0.1"></div>
-              <div class="form-group"><label>RV/TLC (%)</label><input type="number" id="rv_tlc" placeholder="Ej: 35.5" step="0.1"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header" onclick="toggleSection(this)">
-            <span>💨 DIFUSIÓN PULMONAR (DLCO)</span>
-            <span class="toggle-icon">▼</span>
-          </div>
-          <div class="section-content">
-            <div class="form-row">
-              <div class="form-group"><label>DLCO_SB (L)</label><input type="number" id="dlco_sb" placeholder="Ej: 22.4" step="0.1"></div>
-              <div class="form-group"><label>Hemoglobina (g/dL)</label><input type="number" id="hb" placeholder="Ej: 14.2" step="0.1"></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>KCO_C (L)</label><input type="number" id="kco_c" placeholder="Ej: 4.31" step="0.01"></div>
-              <div class="form-group"><label>VA_SB (L)</label><input type="number" id="va_sb" placeholder="Ej: 5.20" step="0.1"></div>
-            </div>
-            <div class="form-row full">
-              <div class="form-group"><label>VC_MAX (L)</label><input type="number" id="vc_max" placeholder="Ej: 4.50" step="0.01"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header" onclick="toggleSection(this)">
-            <span>🌬️ FeNO50 - ÓXIDO NÍTRICO EXHALADO</span>
-            <span class="toggle-icon">▼</span>
-          </div>
-          <div class="section-content">
-            <div class="form-row full">
-              <div class="form-group"><label>FeNO50 (ppb)</label><input type="number" id="feno50" placeholder="Ej: 18" step="1" min="0"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header" onclick="toggleSection(this)">
-            <span>⚡ TEST PROVOCACIÓN BRONQUIAL</span>
-            <span class="toggle-icon">▼</span>
-          </div>
-          <div class="section-content">
-            <div class="form-row">
-              <div class="form-group"><label>PC20 (mg/mL)</label><input type="number" id="pc20" placeholder="Opcional" step="0.01"></div>
-              <div class="form-group"><label>PD20 (µmol)</label><input type="number" id="pd20" placeholder="Opcional" step="0.1"></div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="buttons">
-        <button class="btn-analizar" onclick="analizarCompleto()">🔬 ANALIZAR</button>
-        <button class="btn-limpiar" onclick="limpiarFormulario()">🗑️ LIMPIAR</button>
+      <div class="form-group">
+        <label>FEV1/FVC PRE (si lo tienes)</label>
+        <input id="pre_ratio" type="number" step="0.001" placeholder="Ej: 0.80" />
       </div>
     </div>
 
-    <!-- PANEL DERECHO: RESULTADOS -->
-    <div class="panel">
-      <div class="panel-header">📊 RESULTADOS E INTERPRETACIÓN SEGÚN GUÍAS</div>
-
-      <!-- Pestañas (solo PDF al pulsar; NO automático) -->
-      <div class="tabbar no-print">
-        <button type="button" class="tab-btn" onclick="document.getElementById('resultados').scrollIntoView({behavior:'smooth', block:'start'})">
-          Vista
-        </button>
-        <button type="button" class="tab-btn tab-btn-primary" onclick="generarPDF()">
-          PDF
-        </button>
+    <div class="grid3">
+      <div class="form-group">
+        <label>FEV1 % Pred PRE</label>
+        <input id="pre_fev1_pct" type="number" step="0.1" placeholder="Ej: 59.7" />
       </div>
-
-      <div class="panel-body" id="resultados">
-        <p style="text-align: center; color: #999; padding: 60px 20px;">
-          ✓ Completa los datos y haz clic en ANALIZAR<br>
-          <small style="margin-top: 10px; display: block;">Interpretaciones según ATS/ERS 2005, SEPAR 2013 y GOLD 2023</small>
-        </p>
+      <div class="form-group">
+        <label>FVC % Pred PRE</label>
+        <input id="pre_fvc_pct" type="number" step="0.1" placeholder="Ej: 62.2" />
+      </div>
+      <div class="form-group">
+        <label>z-score FEV1/FVC PRE (si disponible)</label>
+        <input id="z_ratio" type="number" step="0.01" placeholder="Ej: -1.70" />
       </div>
     </div>
-  </div>
 
-  <script>
-    function toggleSection(header) {
-      const content = header.nextElementSibling;
-      const icon = header.querySelector('.toggle-icon');
-      content.classList.toggle('show');
-      if (icon) icon.classList.toggle('open');
+    <div class="grid2" style="margin-top:10px;">
+      <div class="form-group">
+        <label>TLC % Pred PRE (si lo tienes)</label>
+        <input id="pre_tlc_pct" type="number" step="0.1" placeholder="Ej: 78" />
+      </div>
+      <div class="form-group">
+        <label>z-score TLC PRE (si lo tienes)</label>
+        <input id="z_tlc" type="number" step="0.01" placeholder="Ej: -1.50" />
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div class="form-group">
+        <label>DLCO % Pred PRE</label>
+        <input id="pre_dlco_pct" type="number" step="0.1" placeholder="Ej: 55" />
+      </div>
+      <div class="form-group">
+        <label>DLCO z-score PRE</label>
+        <input id="z_dlco" type="number" step="0.01" placeholder="Ej: -2.30" />
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div class="form-group">
+        <label>KCO % Pred PRE</label>
+        <input id="pre_kco_pct" type="number" step="0.1" placeholder="Ej: 70" />
+      </div>
+      <div class="form-group">
+        <label>KCO z-score PRE</label>
+        <input id="z_kco" type="number" step="0.01" placeholder="Ej: -1.80" />
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div class="form-group">
+        <label>Hb (g/dL) (opcional)</label>
+        <input id="pre_hb" type="number" step="0.1" placeholder="Ej: 13.5" />
+      </div>
+      <div class="form-group">
+        <label>Umbral “corte bajo” DLCO/KCO (%pred) (opcional)</label>
+        <input id="diff_cut" type="number" step="0.1" placeholder="Por defecto 80" />
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>z-scores PRE (prioritarios para gradación)</h3>
+      <div class="grid2" style="margin-top:8px;">
+        <div class="form-group">
+          <label>z-score FEV1 PRE</label>
+          <input id="z_fev1" type="number" step="0.01" placeholder="Ej: -1.10" />
+        </div>
+        <div class="form-group">
+          <label>z-score FVC PRE</label>
+          <input id="z_fvc" type="number" step="0.01" placeholder="Ej: -0.90" />
+        </div>
+      </div>
+      <div class="hint">Si faltan z-scores, la gradación usa %pred como respaldo (excepto FEV1: siempre z si existe).</div>
+    </div>
+
+    <h2 style="margin-top:14px;">Datos POST</h2>
+
+    <div class="grid3">
+      <div class="form-group">
+        <label>FEV1 (L) POST</label>
+        <input id="post_fev1_L" type="number" step="0.01" placeholder="Ej: 2.20" />
+      </div>
+      <div class="form-group">
+        <label>FVC (L) POST</label>
+        <input id="post_fvc_L" type="number" step="0.01" placeholder="Ej: 2.65" />
+      </div>
+      <div class="form-group">
+        <label>z-score FEV1 POST</label>
+        <input id="z_post_fev1" type="number" step="0.01" placeholder="Ej: -0.80" />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="form-group">
+        <label>z-score FVC POST</label>
+        <input id="z_post_fvc" type="number" step="0.01" placeholder="Ej: -0.70" />
+      </div>
+      <div class="form-group">
+        <label>Ratio fijo obstrucción (por defecto 0.70)</label>
+        <input id="fixed_ratio" type="number" step="0.001" value="0.70" />
+      </div>
+    </div>
+
+    <div class="btnbar">
+      <button id="btnCalc">Interpretar</button>
+      <button class="secondary" id="btnClear" type="button">Limpiar</button>
+      <button class="danger" id="btnExample" type="button">Ejemplo</button>
+    </div>
+  </section>
+
+  <!-- OUTPUT -->
+  <aside class="card">
+    <h2>Resultado</h2>
+
+    <div class="kpi">
+      <div class="item">
+        <div class="lab">Patrón (PRE)</div>
+        <div class="val" id="patternTxt">—</div>
+      </div>
+      <div class="item">
+        <div class="lab">Obstrucción (severidad por FEV1%pred)</div>
+        <div class="val" id="obstructionSevTxt">—</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Interpretación PRE</h3>
+      <div class="lines" id="interpretPre">—</div>
+    </div>
+
+    <div class="block">
+      <h3>Broncodilatador (ATS clásico + Δz)</h3>
+      <div class="lines" id="interpretBD">—</div>
+    </div>
+
+    <div class="block">
+      <h3>Alteración funcional graduada (z-score prioritario; FEV1 siempre z si existe)</h3>
+      <div class="lines" id="graduationTxt">—</div>
+    </div>
+
+    <div class="block">
+      <h3>Resumen numérico</h3>
+      <table>
+        <thead>
+          <tr><th>Parámetro</th><th>Valor</th><th>Gradación</th></tr>
+        </thead>
+        <tbody id="summaryBody"></tbody>
+      </table>
+      <div class="hint">Orientativo. Usa el informe completo del laboratorio para decisiones clínicas.</div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  Este módulo implementa ATS clásico para broncodilatador y severidad de obstrucción por FEV1%pred. La gradación por z-score usa tu regla:
+  Leve si $z>-2.5$, Moderada si $-4.0 \le z \le -2.5$, Grave si $z<-4.0$.
+</footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function num(id){
+    const el = $(id);
+    if(!el) return NaN;
+    const v = el.value;
+    if(v === "" || v === null || v === undefined) return NaN;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  const fmt = (x, d=2) => Number.isFinite(x) ? x.toFixed(d) : "—";
+  const fmtPct = (x, d=1) => Number.isFinite(x) ? `${x.toFixed(d)}%` : "—";
+
+  function ratioFrom(fev1L, fvcL){
+    if(!Number.isFinite(fev1L) || !Number.isFinite(fvcL) || fvcL === 0) return NaN;
+    return fev1L / fvcL;
+  }
+
+  // Severidad por FEV1%pred (tus cortes)
+  function sevObstructionByFEV1Pct(fev1Pct){
+    if(!Number.isFinite(fev1Pct)) return { sevTxt:"—", sevKey:"na" };
+    if(fev1Pct >= 70) return { sevTxt:"Leve", sevKey:"leve" };
+    if(fev1Pct >= 60) return { sevTxt:"Moderado", sevKey:"moderado" };
+    if(fev1Pct >= 50) return { sevTxt:"Moderadamente grave", sevKey:"mod-grave" };
+    if(fev1Pct >= 35) return { sevTxt:"Grave", sevKey:"grave" };
+    return { sevTxt:"Muy grave", sevKey:"muy-grave" };
+  }
+
+  // Gradación z-score (tu regla exacta)
+  function gradeFromZ(z){
+    if(!Number.isFinite(z)) return { nivel:"—", clave:"na" };
+    if(z > -2.5) return { nivel:"Leve (z > -2.5)", clave:"leve" };
+    if(z >= -4.0 && z <= -2.5) return { nivel:"Moderada (−4.0 ≤ z ≤ −2.5)", clave:"moderada" };
+    return { nivel:"Grave (z < -4.0)", clave:"grave" };
+  }
+
+  // Respaldo por %pred (genérico y solo si falta z-score)
+  function gradeFromPctGeneric(pct){
+    if(!Number.isFinite(pct)) return { nivel:"—", clave:"na" };
+    // Ajuste simple (orientativo). Si tienes cortes exactos de tu lab para estos parámetros,
+    // dímelos y lo dejo idéntico.
+    if(pct >= 80) return { nivel:"Leve / dentro de lo esperable", clave:"leve" };
+    if(pct >= 60) return { nivel:"Moderada alteración", clave:"moderada" };
+    return { nivel:"Grave / marcada alteración", clave:"grave" };
+  }
+
+  function gradeFromPctFEV1(fev1Pct){
+    // Para FEV1 en tabla graduada: solo si NO hay z-score de FEV1
+    return sevObstructionByFEV1Pct(fev1Pct).sevTxt === "—"
+      ? { nivel:"—", fuente:"%pred", clave:"na" }
+      : { nivel: sevObstructionByFEV1Pct(fev1Pct).sevTxt, fuente:"%pred", clave: sevObstructionByFEV1Pct(fev1Pct).sevKey };
+  }
+
+  function gradForParam({ pct, z, kind="generic" }){
+    if(Number.isFinite(z)){
+      const g = gradeFromZ(z);
+      return { nivel:g.nivel, fuente:"z-score", clave:g.clave };
+    }
+    const g = kind === "fev1" ? gradeFromPctFEV1(pct) : gradeFromPctGeneric(pct);
+    return { nivel:g.nivel, fuente:"%pred", clave:g.clave };
+  }
+
+  function bronchodilatorATSClassic(preFev1L, preFvcL, postFev1L, postFvcL){
+    const anyPost = Number.isFinite(postFev1L) || Number.isFinite(postFvcL);
+    if(!anyPost){
+      return { met:false, text:"No evaluable con ATS: faltan datos POST (FEV1 y/o FVC).", details:{} };
+    }
+    if(!Number.isFinite(preFev1L) || !Number.isFinite(preFvcL)){
+      return { met:false, text:"No evaluable con ATS: faltan datos PRE (FEV1 y/o FVC).", details:{} };
     }
 
-    function limpiarFormulario() {
-      const inputs = document.querySelectorAll('input[type="text"], input[type="number"], select');
-      inputs.forEach(input => input.value = '');
+    const dFev1 = Number.isFinite(postFev1L) ? (postFev1L - preFev1L) : NaN;
+    const dFvc  = Number.isFinite(postFvcL)  ? (postFvcL  - preFvcL)  : NaN;
 
-      document.getElementById('resultados').innerHTML = `
-        <p style="text-align: center; color: #999; padding: 60px 20px;">
-          ✓ Completa los datos y haz clic en ANALIZAR<br>
-          <small style="margin-top: 10px; display: block;">Interpretaciones según ATS/ERS 2005, SEPAR 2013 y GOLD 2023</small>
-        </p>
-      `;
-    }
+    const pctFev1 = (Number.isFinite(dFev1) && preFev1L !== 0) ? (dFev1 / preFev1L * 100) : NaN;
+    const pctFvc  = (Number.isFinite(dFvc)  && preFvcL !== 0) ? (dFvc  / preFvcL  * 100) : NaN;
 
-    // ====== PDF NO automático: solo imprime/guarda al pulsar "PDF" ======
-    function generarPDF() {
-      // El navegador abrirá el diálogo de impresión/guardado en PDF
-      window.print();
-    }
+    const okFev1 = Number.isFinite(pctFev1) && Number.isFinite(dFev1) && dFev1 >= 0.200 && pctFev1 >= 12;
+    const okFvc  = Number.isFinite(pctFvc)  && Number.isFinite(dFvc)  && dFvc  >= 0.200 && pctFvc  >= 12;
 
-    function calcularGLI2012(edad, sexo, altura) {
-      if (sexo === 'M') {
-        return {
-          fev1: 0.0414 * altura - 0.0244 * edad - 2.19,
-          fvc: 0.0600 * altura - 0.0214 * edad - 4.90,
-          tlc: 0.0844 * altura - 0.0271 * edad - 7.99,
-          dlco: 10.2 + 0.086 * altura - 0.2167 * edad
-        };
-      } else {
-        return {
-          fev1: 0.0342 * altura - 0.0255 * edad - 1.578,
-          fvc: 0.0491 * altura - 0.0216 * edad - 3.59,
-          tlc: 0.0649 * altura - 0.0214 * edad - 3.77,
-          dlco: 8.52 + 0.071 * altura - 0.1714 * edad
-        };
-      }
-    }
-
-    function getStatus(pct) {
-      if (isNaN(pct) || pct === null || pct === '') return 'status-no-medido';
-      if (pct >= 80) return 'status-normal';
-      if (pct >= 70) return 'status-leve';
-      if (pct >= 60) return 'status-moderado';
-      return 'status-severo';
-    }
-
-    function getSeveridad(pct) {
-      if (isNaN(pct) || pct === null || pct === '') return 'No medido';
-      if (pct >= 80) return 'Normal';
-      if (pct >= 70) return 'Leve';
-      if (pct >= 60) return 'Moderado';
-      return 'Severo';
-    }
-
-    /**
-     * Patrones:
-     * - OBSTRUCTIVO: FEV1/FVC < 70
-     * - RESTRICTIVO: TLC < 80 (solo si hay TLC)
-     * - MIXTO: ambos (obstructivo y restrictivo)
-     * - SOSPECHA RESTRICTIVO: sin TLC:
-     *     ratio >= 70 (no obstrucción) y FVC% < 80 => sospecha compatible
-     */
-    function getPatron(ratio, tlcPct, fvcPct, hasFVC, hasFEV1) {
-      if (!hasFVC || !hasFEV1 || isNaN(ratio)) return 'NO EVALUABLE';
-
-      const obstructivo = ratio < 70;
-
-      // Si NO hay TLC => no confirmamos restricción real, pero sí sospecha
-      if (isNaN(tlcPct) || tlcPct === null || tlcPct === '') {
-        if (obstructivo) return 'OBSTRUCTIVO';
-        if (!isNaN(fvcPct) && fvcPct < 80) return 'SOSPECHA RESTRICTIVO';
-        return 'NORMAL';
-      }
-
-      const restrictivo = tlcPct < 80;
-
-      if (obstructivo && restrictivo) return 'MIXTO';
-      if (restrictivo) return 'RESTRICTIVO';
-      if (obstructivo) return 'OBSTRUCTIVO';
-      return 'NORMAL';
-    }
-
-    function getInterpretacionATS_ERS(patron, fev1Pct, tlcPct, dlcoPct) {
-      if (patron === 'NO EVALUABLE') {
-        return '• <strong>NO EVALUABLE:</strong> Faltan datos esenciales para la interpretación (FVC y/o FEV1).';
-      }
-
-      if (patron === 'OBSTRUCTIVO') {
-        let s = '• <strong>PATRÓN OBSTRUCTIVO (ATS/ERS 2005):</strong> Cociente FEV1/FVC &lt; 70%. ';
-        if (!isNaN(fev1Pct)) {
-          if (fev1Pct >= 80) s += 'Obstrucción LEVE.';
-          else if (fev1Pct >= 50) s += 'Obstrucción MODERADA-SEVERA.';
-          else if (fev1Pct >= 35) s += 'Obstrucción SEVERA.';
-          else s += 'Obstrucción MUY SEVERA.';
-        }
-        if (!isNaN(dlcoPct) && dlcoPct < 80) s += ' Difusión comprometida - Sugiere enfisema.';
-        return s;
-      }
-
-      if (patron === 'RESTRICTIVO') {
-        let s = '• <strong>PATRÓN RESTRICTIVO (ATS/ERS 2005):</strong> TLC &lt; 80% predicho. ';
-        if (!isNaN(tlcPct)) {
-          if (tlcPct >= 70) s += 'Restricción LEVE.';
-          else if (tlcPct >= 60) s += 'Restricción MODERADA.';
-          else s += 'Restricción SEVERA.';
-        }
-        if (!isNaN(dlcoPct) && dlcoPct < 80) s += ' Posible enfermedad pulmonar intersticial.';
-        return s;
-      }
-
-      if (patron === 'MIXTO') {
-        return '• <strong>PATRÓN MIXTO:</strong> Características obstructivas y restrictivas. Requiere evaluación clínica integral.';
-      }
-
-      if (patron === 'SOSPECHA RESTRICTIVO') {
-        let s = '• <strong>SOSPECHA DE PATRÓN RESTRICTIVO:</strong> FVC &lt; 80% predicho con cociente FEV1/FVC &ge; 70%. ';
-        s += 'Es compatible con posible restricción, pero <strong>no se confirma sin TLC</strong> (restricción verdadera requiere volúmenes pulmonares).';
-        if (!isNaN(dlcoPct) && dlcoPct < 80) s += ' DLCO disminuida puede apoyar afectación parenquimatosa u otras causas.';
-        return s;
-      }
-
-      return '• <strong>ESPIROMETRÍA NORMAL:</strong> Parámetros dentro de los límites normales.';
-    }
-
-    function getInterpretacionGOLD(fev1Pct) {
-      if (isNaN(fev1Pct)) return '';
-      let result = '';
-      if (fev1Pct >= 80) result = 'GRADO I (Leve)';
-      else if (fev1Pct >= 50) result = 'GRADO II-III (Moderado-Severo)';
-      else result = 'GRADO IV (Muy Severo)';
-      return '<br>• <strong>GOLD 2023:</strong> ' + result;
-    }
-
-    function getInterpretacionFENO(feno50) {
-      if (isNaN(feno50) || feno50 === '') return '<br>• <strong>FeNO50 (ATS/ERS):</strong> No medido';
-      let result = '';
-      if (feno50 < 25) result = '&lt; 25 ppb: NORMAL - Bajo riesgo de inflamación eosinófila.';
-      else if (feno50 < 50) result = '25-50 ppb: INTERMEDIO - Considerar corticoides inhalados.';
-      else result = '≥ 50 ppb: ELEVADO - Inflamación eosinófila significativa.';
-      return '<br>• <strong>FeNO50 (ATS/ERS):</strong> ' + result;
-    }
-
-    function evaluarBD_ATS_ERS(deltaPct, deltaAbsL) {
-      if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
-        return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
-      }
-      const abs_mL = deltaAbsL * 1000;
-      const positiva = (deltaPct >= 12 && abs_mL >= 200);
-      return positiva
-        ? { estado: 'POSITIVA (≥12% y ≥200 mL)', clase: 'status-severo' }
-        : { estado: 'NEGATIVA', clase: 'status-normal' };
-    }
-
-    function evaluarBD_SEPAR(deltaPct, deltaAbsL) {
-      if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
-        return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
-      }
-      const abs_mL = deltaAbsL * 1000;
-      const positiva = (deltaPct > 12 && abs_mL > 200);
-      const muyPos = (deltaPct > 15 && abs_mL > 400);
-
-      if (muyPos) return { estado: 'MUY POSITIVA (>15% y >400 mL)', clase: 'status-severo' };
-      if (positiva) return { estado: 'POSITIVA (>12% y >200 mL)', clase: 'status-moderado' };
-      return { estado: 'NEGATIVA', clase: 'status-normal' };
-    }
-
-    function evaluarBD_GOLD(deltaPct, deltaAbsL) {
-      if (isNaN(deltaPct) || isNaN(deltaAbsL)) {
-        return { estado: 'NO EVALUABLE', clase: 'status-no-medido' };
-      }
-      const abs_mL = deltaAbsL * 1000;
-
-      const compatibleMarcada = (deltaPct >= 15 && abs_mL >= 400);
-      const compatibleClasica = (deltaPct >= 12 && abs_mL >= 200);
-
-      if (compatibleMarcada) {
-        return {
-          estado: 'Compatible con reversibilidad marcada (≥15% y ≥400 mL) — interpretar con cautela (GOLD 2023)',
-          clase: 'status-leve'
-        };
-      }
-      if (compatibleClasica) {
-        return {
-          estado: 'Compatible con respuesta significativa (≥12% y ≥200 mL) — interpretar con cautela (GOLD 2023)',
-          clase: 'status-moderado'
-        };
-      }
+    if(okFev1 || okFvc){
+      const parts = [];
+      if(okFev1) parts.push("FEV1");
+      if(okFvc) parts.push("FVC");
       return {
-        estado: 'No cumple umbrales de reversibilidad significativa — interpretar con clínica (GOLD 2023)',
-        clase: 'status-normal'
+        met:true,
+        text:`ATS clásico positivo: mejora ≥12% y ≥200 mL en ${parts.join(" y ")}.`,
+        details:{ dFev1, pctFev1, dFvc, pctFvc, okFev1, okFvc }
       };
     }
 
-    function analizarCompleto() {
-      const nombre = document.getElementById('nombre').value || 'Paciente';
-      const edad = parseInt(document.getElementById('edad').value);
-      const sexo = document.getElementById('sexo').value;
-      const altura = parseInt(document.getElementById('altura').value);
-      const peso = parseInt(document.getElementById('peso').value);
+    return {
+      met:false,
+      text:"ATS clásico negativo: no cumple Δ≥12% y ≥200 mL en FEV1 ni en FVC.",
+      details:{ dFev1, pctFev1, dFvc, pctFvc, okFev1, okFvc }
+    };
+  }
 
-      const fvc = parseFloat(document.getElementById('fvc').value);
-      const fev1 = parseFloat(document.getElementById('fev1').value);
+  function diffusionOrientation(dlcoPct, kcoPct, dlcoCut, kcoCut){
+    const dlLow = Number.isFinite(dlcoPct) ? (dlcoPct < dlcoCut) : NaN;
+    const kLow  = Number.isFinite(kcoPct)  ? (kcoPct  < kcoCut) : NaN;
 
-      const pef = parseFloat(document.getElementById('pef').value);
-      const pif = parseFloat(document.getElementById('pif').value);
-      const pim = parseFloat(document.getElementById('pim').value);
-      const pem = parseFloat(document.getElementById('pem').value);
+    if(!Number.isFinite(dlLow) && !Number.isFinite(kLow)) return "—";
+    if(dlLow === true && kLow === true) return "Orientación: intercambio gaseoso y/o área efectiva reducida (correlacionar con clínica/imagen).";
+    if(dlLow === true && kLow === false) return "Orientación: DLCO baja con KCO preservada (posible componente vascular o desbalance; considerar Hb según protocolo).";
+    if(dlLow === false && kLow === true) return "Orientación: KCO baja con DLCO preservada (correlacionar; técnica/volúmenes/comorbilidades).";
+    return "Orientación: DLCO/KCO sin disminución significativa.";
+  }
 
-      const fev1_post = parseFloat(document.getElementById('fev1_post').value);
-      const farmaco_bd = document.getElementById('farmaco_bd').value;
+  function renderSummary(rows){
+    const tbody = $("summaryBody");
+    tbody.innerHTML = "";
+    for(const r of rows){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.name}</td><td class="mono">${r.value}</td><td>${r.grade}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
 
-      const tlc = parseFloat(document.getElementById('tlc').value);
-      const rv_tlc = parseFloat(document.getElementById('rv_tlc').value);
+  function interpret(){
+    const fixedRatio = num("fixed_ratio");
 
-      const dlco_sb = parseFloat(document.getElementById('dlco_sb').value);
-      const hb = parseFloat(document.getElementById('hb').value);
-      const kco_c = parseFloat(document.getElementById('kco_c').value);
-      const va_sb = parseFloat(document.getElementById('va_sb').value);
-      const vc_max = parseFloat(document.getElementById('vc_max').value);
+    // PRE
+    const preFev1L   = num("pre_fev1_L");
+    const preFvcL    = num("pre_fvc_L");
+    const preFev1Pct = num("pre_fev1_pct");
+    const preFvcPct  = num("pre_fvc_pct");
 
-      const feno50 = parseFloat(document.getElementById('feno50').value);
+    const preRatioIn = num("pre_ratio");
+    const ratio = Number.isFinite(preRatioIn) ? preRatioIn : ratioFrom(preFev1L, preFvcL);
 
-      const pc20 = document.getElementById('pc20').value;
-      const pd20 = document.getElementById('pd20').value;
+    // Severidad obstrucción
+    const obstrSev = sevObstructionByFEV1Pct(preFev1Pct);
+    const obstructed = Number.isFinite(ratio) ? (ratio < fixedRatio) : NaN;
 
-      const hasFVC = !isNaN(fvc);
-      const hasFEV1 = !isNaN(fev1);
-
-      const pred = calcularGLI2012(edad, sexo, altura);
-
-      const fev1Pct = (!isNaN(fev1) && !isNaN(pred.fev1)) ? (fev1 / pred.fev1 * 100) : NaN;
-      const fvcPct = (!isNaN(fvc) && !isNaN(pred.fvc)) ? (fvc / pred.fvc * 100) : NaN;
-      const tlcPct = (!isNaN(tlc) && !isNaN(pred.tlc)) ? (tlc / pred.tlc * 100) : NaN;
-      const dlcoPct = (!isNaN(dlco_sb) && !isNaN(pred.dlco)) ? (dlco_sb / pred.dlco * 100) : NaN;
-
-      const kco_c_pred = 4.5;
-      const kco_cPct = !isNaN(kco_c) ? (kco_c / kco_c_pred * 100) : NaN;
-
-      const ratio = (!isNaN(fev1) && !isNaN(fvc) && fvc !== 0) ? (fev1 / fvc * 100) : NaN;
-
-      const cambio_absoluto = (!isNaN(fev1_post) && !isNaN(fev1)) ? (fev1_post - fev1) : NaN; // L
-      const cambio_porcentual = (!isNaN(cambio_absoluto) && !isNaN(fev1) && fev1 !== 0)
-        ? (cambio_absoluto / fev1 * 100)
+    // Patrón (sin TLC confirmatorio: usamos “restricción probable” solo orientativo)
+    const fvcCutForProbableRestr = 80; // orientativo fijo
+    const restrProbable =
+      Number.isFinite(preFvcPct) && Number.isFinite(obstructed)
+        ? (preFvcPct < fvcCutForProbableRestr && obstructed === false)
         : NaN;
 
-      const bd_atsers = evaluarBD_ATS_ERS(cambio_porcentual, cambio_absoluto);
-      const bd_separ = evaluarBD_SEPAR(cambio_porcentual, cambio_absoluto);
-      const bd_gold = evaluarBD_GOLD(cambio_porcentual, cambio_absoluto);
-
-      // Corregido: permitir SOSPECHA RESTRICTIVO sin TLC
-      const patron = getPatron(ratio, tlcPct, fvcPct, hasFVC, hasFEV1);
-
-      const esp = `
-        <div class="result-section">
-          <div class="result-section-header">📈 ESPIROMETRÍA (GLI 2012)</div>
-          <div class="result-section-body">
-            <table class="result-table">
-              <thead>
-                <tr>
-                  <th>Parámetro</th>
-                  <th>Medido</th>
-                  <th>Predicho</th>
-                  <th>%</th>
-                  <th>Severidad</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${!isNaN(fvc) ? `
-                  <tr>
-                    <td>FVC</td>
-                    <td>${fvc.toFixed(2)}L</td>
-                    <td>${pred.fvc.toFixed(2)}</td>
-                    <td><span class="${getStatus(fvcPct)}">${fvcPct.toFixed(1)}%</span></td>
-                    <td><span class="${getStatus(fvcPct)}">${getSeveridad(fvcPct)}</span></td>
-                  </tr>
-                ` : ''}
-
-                ${!isNaN(fev1) ? `
-                  <tr>
-                    <td>FEV1</td>
-                    <td>${fev1.toFixed(2)}L</td>
-                    <td>${pred.fev1.toFixed(2)}</td>
-                    <td><span class="${getStatus(fev1Pct)}">${fev1Pct.toFixed(1)}%</span></td>
-                    <td><span class="${getStatus(fev1Pct)}">${getSeveridad(fev1Pct)}</span></td>
-                  </tr>
-                ` : ''}
-
-                ${!isNaN(ratio) ? `
-                  <tr>
-                    <td>FEV1/FVC</td>
-                    <td colspan="3">${ratio.toFixed(1)}%</td>
-                    <td>
-                      <span class="${ratio < 70 ? 'status-severo' : 'status-normal'}">
-                        ${ratio < 70 ? 'Anormal' : 'Normal'}
-                      </span>
-                    </td>
-                  </tr>
-                ` : ''}
-
-                ${!isNaN(pef) ? `
-                  <tr>
-                    <td>PEF</td>
-                    <td>${pef.toFixed(2)}L/s</td>
-                    <td>8.0-9.0</td>
-                    <td><span class="${getStatus((pef/8.5*100))}">${(pef/8.5*100).toFixed(0)}%</span></td>
-                    <td><span class="${pef >= 7 ? 'status-normal' : 'status-severo'}">${pef >= 7 ? 'Normal' : 'Bajo'}</span></td>
-                  </tr>
-                ` : ''}
-
-                ${!isNaN(pif) ? `
-                  <tr>
-                    <td>PIF</td>
-                    <td>${pif.toFixed(2)}L/s</td>
-                    <td>7.0-8.5</td>
-                    <td><span class="${getStatus((pif/7.5*100))}">${(pif/7.5*100).toFixed(0)}%</span></td>
-                    <td><span class="${pif >= 6 ? 'status-normal' : 'status-severo'}">${pif >= 6 ? 'Normal' : 'Bajo'}</span></td>
-                  </tr>
-                ` : ''}
-
-                ${!isNaN(pim) ? `
-                  <tr>
-                    <td>PIM</td>
-                    <td>${pim.toFixed(1)}cmH₂O/L/s</td>
-                    <td>80-110</td>
-                    <td><span class="${getStatus((pim/95*100))}">${(pim/95*100).toFixed(0)}%</span></td>
-                    <td><span class="${pim >= 70 ? 'status-normal' : 'status-severo'}">${pim >= 70 ? 'Normal' : 'Bajo'}</span></td>
-                  </tr>
-                ` : ''}
-
-                ${!isNaN(pem) ? `
-                  <tr>
-                    <td>PEM</td>
-                    <td>${pem.toFixed(1)}cmH₂O/L/s</td>
-                    <td>100-140</td>
-                    <td><span class="${getStatus((pem/120*100))}">${(pem/120*100).toFixed(0)}%</span></td>
-                    <td><span class="${pem >= 80 ? 'status-normal' : 'status-severo'}">${pem >= 80 ? 'Normal' : 'Bajo'}</span></td>
-                  </tr>
-                ` : ''}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
-
-      const vol = `
-        ${(!isNaN(tlc) || !isNaN(rv_tlc)) ? `
-          <div class="result-section">
-            <div class="result-section-header">🫁 VOLÚMENES PULMONARES</div>
-            <div class="result-section-body">
-              <table class="result-table">
-                <tbody>
-                  ${!isNaN(tlc) ? `
-                    <tr>
-                      <td>TLC</td>
-                      <td>${tlc.toFixed(2)}L</td>
-                      <td>${pred.tlc.toFixed(2)}</td>
-                      <td><span class="${getStatus(tlcPct)}">${tlcPct.toFixed(1)}%</span></td>
-                      <td><span class="${getStatus(tlcPct)}">${getSeveridad(tlcPct)}</span></td>
-                    </tr>
-                  ` : ''}
-
-                  ${!isNaN(rv_tlc) ? `
-                    <tr>
-                      <td>RV/TLC</td>
-                      <td>${rv_tlc.toFixed(1)}%</td>
-                      <td>30-35%</td>
-                      <td><span class="${rv_tlc <= 35 ? 'status-normal' : 'status-moderado'}">No medido</span></td>
-                      <td><span class="${rv_tlc <= 35 ? 'status-normal' : 'status-moderado'}">${rv_tlc <= 35 ? 'Normal' : 'Elevado'}</span></td>
-                    </tr>
-                  ` : ''}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ` : ''}
-      `;
-
-      const diff = `
-        ${(!isNaN(dlco_sb) || !isNaN(kco_c) || !isNaN(va_sb) || !isNaN(vc_max) || !isNaN(hb)) ? `
-          <div class="result-section">
-            <div class="result-section-header">💨 DIFUSIÓN PULMONAR</div>
-            <div class="result-section-body">
-              <table class="result-table">
-                <thead>
-                  <tr>
-                    <th>Parámetro</th>
-                    <th>Medido</th>
-                    <th>Predicho</th>
-                    <th>%</th>
-                    <th>Severidad</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${!isNaN(dlco_sb) ? `
-                    <tr>
-                      <td>DLCO_SB</td>
-                      <td>${dlco_sb.toFixed(1)}L</td>
-                      <td>${pred.dlco.toFixed(1)}</td>
-                      <td><span class="${getStatus(dlcoPct)}">${dlcoPct.toFixed(1)}%</span></td>
-                      <td><span class="${getStatus(dlcoPct)}">${getSeveridad(dlcoPct)}</span></td>
-                    </tr>
-                  ` : ''}
-
-                  ${!isNaN(kco_c) ? `
-                    <tr>
-                      <td>KCO_C</td>
-                      <td>${kco_c.toFixed(2)}L</td>
-                      <td>4.0-5.5</td>
-                      <td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${kco_cPct.toFixed(0)}%</span></td>
-                      <td><span class="${kco_c >= 4 ? 'status-normal' : 'status-severo'}">${kco_c >= 4 ? 'Normal' : 'Bajo'}</span></td>
-                    </tr>
-                  ` : ''}
-
-                  ${!isNaN(va_sb) ? `
-                    <tr>
-                      <td>VA_SB</td>
-                      <td>${va_sb.toFixed(2)}L</td>
-                      <td>-</td>
-                      <td>-</td>
-                      <td>-</td>
-                    </tr>
-                  ` : ''}
-
-                  ${!isNaN(vc_max) ? `
-                    <tr>
-                      <td>VC_MAX</td>
-                      <td>${vc_max.toFixed(2)}L</td>
-                      <td>-</td>
-                      <td>-</td>
-                      <td>-</td>
-                    </tr>
-                  ` : ''}
-
-                  ${!isNaN(hb) ? `
-                    <tr>
-                      <td>Hemoglobina</td>
-                      <td>${hb.toFixed(1)}g/dL</td>
-                      <td>13.5-17.5</td>
-                      <td>${(hb/15.5*100).toFixed(0)}%</td>
-                      <td><span class="${hb >= 13.5 ? 'status-normal' : 'status-severo'}">${hb >= 13.5 ? 'Normal' : 'Bajo'}</span></td>
-                    </tr>
-                  ` : ''}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ` : ''}
-      `;
-
-      const bd = `
-        ${(!isNaN(cambio_porcentual) && !isNaN(cambio_absoluto)) ? `
-          <div class="result-section">
-            <div class="result-section-header">💊 TEST BRONCODILATADOR ${farmaco_bd ? '(' + farmaco_bd + ')' : ''}</div>
-            <div class="result-section-body">
-              <table class="result-table">
-                <tbody>
-                  <tr>
-                    <td><strong>FEV1 Pre-BD:</strong></td>
-                    <td>${!isNaN(fev1) ? fev1.toFixed(2) + ' L' : 'No medido'}</td>
-                    <td><strong>FEV1 Post-BD:</strong></td>
-                    <td>${!isNaN(fev1_post) ? fev1_post.toFixed(2) + ' L' : 'No medido'}</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Cambio absoluto:</strong></td>
-                    <td>${!isNaN(cambio_absoluto) ? cambio_absoluto.toFixed(3) + ' L' : 'No medido'}</td>
-                    <td><strong>Cambio porcentual:</strong></td>
-                    <td>${!isNaN(cambio_porcentual) ? cambio_porcentual.toFixed(1) + ' %' : 'No medido'}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <div class="guide-comparison" style="margin-top: 12px;">
-                <strong style="color:#0d47a1; display:block; margin-bottom:8px;">
-                  📋 Comparación del test broncodilatador (FEV1)
-                </strong>
-
-                <div class="guide-row">
-                  <div class="guide-name">🔵 ATS/ERS 2005</div>
-                  <div class="guide-criteria">Criterio: <strong>≥12%</strong> Y <strong>≥200 mL</strong> (ambos)</div>
-                  <div class="guide-result"><span class="${bd_atsers.clase}">${bd_atsers.estado}</span></div>
-                </div>
-
-                <div class="guide-row">
-                  <div class="guide-name">🟢 SEPAR 2013</div>
-                  <div class="guide-criteria">
-                    Criterios usados:
-                    <div style="margin-top:4px;">
-                      • Positiva: <strong>&gt;12%</strong> y <strong>&gt;200 mL</strong><br>
-                      • Muy positiva: <strong>&gt;15%</strong> y <strong>&gt;400 mL</strong>
-                    </div>
-                  </div>
-                  <div class="guide-result"><span class="${bd_separ.clase}">${bd_separ.estado}</span></div>
-                </div>
-
-                <div class="guide-row">
-                  <div class="guide-name">🟡 GOLD 2023</div>
-                  <div class="guide-criteria">
-                    La reversibilidad <strong>no</strong> se recomienda para guiar decisión/diagnóstico.
-                    Se interpreta como <em>dato complementario con cautela</em>.
-                  </div>
-                  <div class="guide-result"><span class="${bd_gold.clase}">${bd_gold.estado}</span></div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        ` : '' }
-      `;
-
-      const feno = `
-        ${!isNaN(feno50) ? `
-          <div class="result-section">
-            <div class="result-section-header">🌬️ FeNO50 (ppb)</div>
-            <div class="result-section-body">
-              <table class="result-table">
-                <tbody>
-                  <tr>
-                    <td>${feno50}</td>
-                    <td>
-                      <span class="${feno50 < 25 ? 'status-normal' : feno50 < 50 ? 'status-leve' : 'status-severo'}">
-                        ${feno50 < 25 ? 'NORMAL' : feno50 < 50 ? 'INTERMEDIO' : 'ELEVADO'}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ` : ''}
-      `;
-
-      const prov = `
-        ${(pc20 || pd20) ? `
-          <div class="result-section">
-            <div class="result-section-header">⚡ PROVOCACIÓN BRONQUIAL</div>
-            <div class="result-section-body">
-              <table class="result-table">
-                <tbody>
-                  ${pc20 ? `
-                    <tr>
-                      <td>PC20: ${pc20} mg/mL</td>
-                      <td><span class="${parseFloat(pc20) < 8 ? 'status-severo' : 'status-normal'}">${parseFloat(pc20) < 8 ? 'POSITIVO' : 'NEGATIVO'}</span></td>
-                    </tr>
-                  ` : ''}
-
-                  ${pd20 ? `
-                    <tr>
-                      <td>PD20: ${pd20} µmol</td>
-                      <td><span class="${parseFloat(pd20) < 635 ? 'status-severo' : 'status-normal'}">${parseFloat(pd20) < 635 ? 'POSITIVO' : 'NEGATIVO'}</span></td>
-                    </tr>
-                  ` : ''}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ` : ''}
-      `;
-
-      const patronStatusClass = (patron === 'NO EVALUABLE')
-        ? 'status-no-medido'
-        : (patron === 'NORMAL' ? 'status-normal'
-          : (patron === 'OBSTRUCTIVO' ? 'status-severo'
-            : (patron === 'RESTRICTIVO' ? 'status-moderado'
-              : (patron === 'MIXTO' ? 'status-severo' : 'status-moderado'))));
-
-      const html = `
-        <div class="result-section">
-          <div class="result-section-header">👤 DATOS DEL PACIENTE</div>
-          <div class="result-section-body">
-            <table class="result-table">
-              <tbody>
-                <tr>
-                  <td><strong>Nombre:</strong></td><td>${nombre}</td>
-                  <td><strong>Edad:</strong></td><td>${edad}a</td>
-                </tr>
-                <tr>
-                  <td><strong>Sexo:</strong></td><td>${sexo === 'M' ? 'M' : sexo === 'F' ? 'F' : 'No medido'}</td>
-                  <td><strong>IMC:</strong></td>
-                  <td>${(!isNaN(peso) && !isNaN(altura) && altura !== 0) ? (peso / ((altura/100) ** 2)).toFixed(1) : 'No medido'}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="result-section">
-          <div class="result-section-header">🔍 PATRÓN IDENTIFICADO</div>
-          <div class="result-section-body">
-            <table class="result-table">
-              <tbody>
-                <tr>
-                  <td><strong>Patrón:</strong></td>
-                  <td><span class="${patronStatusClass}">${patron}</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        ${esp}
-        ${bd}
-        ${vol}
-        ${diff}
-        ${feno}
-        ${prov}
-
-        <div class="interpretation-box">
-          <h4>📖 INTERPRETACIÓN CLÍNICA SEGÚN GUÍAS</h4>
-          <p>${getInterpretacionATS_ERS(patron, fev1Pct, tlcPct, dlcoPct)}</p>
-          ${patron === 'OBSTRUCTIVO' ? `<p>${getInterpretacionGOLD(fev1Pct)}</p>` : ''}
-          <p>${getInterpretacionFENO(feno50)}</p>
-
-          <div class="guideline-ref">
-            <strong>Guías de Referencia:</strong><br>
-            <em>• ATS/ERS 2005</em> | <em>GLI 2012</em> | <em>SEPAR 2013</em> | <em>GOLD 2023</em><br>
-            <strong>Autor:</strong> Dr. Francisco Jose Roig Vázquez, Especialista en Neumología
-          </div>
-        </div>
-      `;
-
-      document.getElementById('resultados').innerHTML = html;
+    let pattern = "Interpretación incompleta";
+    if(Number.isFinite(obstructed)){
+      pattern = obstructed === true
+        ? `Obstructivo (${obstrSev.sevTxt})`
+        : (Number.isFinite(restrProbable) && restrProbable === true
+            ? "Restricción probable (sin TLC: confirmación pendiente)"
+            : "Sin obstrucción (sin TLC)");
     }
-  </script>
+
+    $("patternTxt").textContent = pattern;
+    $("obstructionSevTxt").textContent = Number.isFinite(preFev1Pct) ? obstrSev.sevTxt : "—";
+
+    // Texto PRE
+    const ratioTxt = Number.isFinite(ratio) ? (ratio*100).toFixed(1) + "%" : "—";
+    const interpretPre = [
+      `Patrón (PRE): ${pattern}`,
+      `FEV1/FVC PRE: ${ratioTxt} (corte fijo: ${(fixedRatio*100).toFixed(1)}%).`,
+      Number.isFinite(obstructed)
+        ? `Obstrucción: ${obstructed ? "Sí" : "No"}${obstructed ? ` — severidad: ${obstrSev.sevTxt}` : ""}.`
+        : `Obstrucción: indeterminada (falta FEV1/FVC).`,
+      Number.isFinite(restrProbable)
+        ? `Restricción probable (orientativa, sin TLC): ${restrProbable ? "Sí" : "No"} (FVC%pred=${Number.isFinite(preFvcPct) ? preFvcPct.toFixed(1)+"%" : "—"}).`
+        : `Restricción probable: indeterminada (faltan datos FVC%pred u obstrucción).`,
+      `Severidad obstrucción por FEV1%pred: ${Number.isFinite(preFev1Pct) ? obstrSev.sevTxt : "—"}.`
+    ].join("\n");
+    $("interpretPre").textContent = interpretPre;
+
+    // Bronco ATS + Δz
+    const postFev1L = num("post_fev1_L");
+    const postFvcL  = num("post_fvc_L");
+    const bd = bronchodilatorATSClassic(preFev1L, preFvcL, postFev1L, postFvcL);
+
+    // Δz
+    const z_fev1_pre  = num("z_fev1");
+    const z_fvc_pre  = num("z_fvc");
+    const z_fev1_post = num("z_post_fev1");
+    const z_fvc_post = num("z_post_fvc");
+
+    const dzFev1 = (Number.isFinite(z_fev1_pre) && Number.isFinite(z_fev1_post)) ? (z_fev1_post - z_fev1_pre) : NaN;
+    const dzFvc  = (Number.isFinite(z_fvc_pre) && Number.isFinite(z_fvc_post)) ? (z_fvc_post - z_fvc_pre) : NaN;
+
+    let dzTxt = "";
+    const dzParts = [];
+    if(Number.isFinite(dzFev1)) dzParts.push(`FEV1: Δz=${dzFev1.toFixed(2)} → ${gradeFromZ(z_fev1_post).nivel} (POST)`);
+    if(Number.isFinite(dzFvc))  dzParts.push(`FVC: Δz=${dzFvc.toFixed(2)} → ${gradeFromZ(z_fvc_post).nivel} (POST)`);
+    if(dzParts.length){
+      dzTxt = "\n\nGradación por cambio de z-score (orientativa)"+ "\n" + dzParts.join("\n");
+    } else {
+      dzTxt = "\n\nΔz no disponible: faltan z-scores PRE/POST de FEV1 y/o FVC.";
+    }
+
+    // Detalles ATS (ΔmL y Δ%)
+    const d = bd.details || {};
+    const atsDetails = [
+      "",
+      "Detalles ATS clásico:",
+      `- FEV1: Δ=${Number.isFinite(d.dFev1)?fmt(d.dFev1,2)+" L":"—"} (${Number.isFinite(d.pctFev1)?fmtPct(d.pctFev1,1):"—"}) ${d.okFev1 ? "(cumple)" : ""}`,
+      `- FVC:  Δ=${Number.isFinite(d.dFvc)?fmt(d.dFvc,2)+" L":"—"} (${Number.isFinite(d.pctFvc)?fmtPct(d.pctFvc,1):"—"}) ${d.okFvc ? "(cumple)" : ""}`
+    ].join("\n");
+
+    $("interpretBD").textContent = bd.text + atsDetails + dzTxt;
+
+    // Gradación funcional: PRIORIZA z-score (y FEV1 SIEMPRE z si existe; si no, %pred)
+    const preTlcPct = num("pre_tlc_pct");
+    const z_tlc = num("z_tlc");
+
+    const preDlcoPct = num("pre_dlco_pct");
+    const z_dlco = num("z_dlco");
+
+    const preKcoPct = num("pre_kco_pct");
+    const z_kco = num("z_kco");
+
+    const z_ratio = num("z_ratio");
+    const preHb = num("pre_hb");
+
+    const diffCut = Number.isFinite(num("diff_cut")) ? num("diff_cut") : 80;
+
+    // FEV1 SIEMPRE z si existe
+    let gradFEV1;
+    if(Number.isFinite(z_fev1_pre)){
+      const g = gradeFromZ(z_fev1_pre);
+      gradFEV1 = { nivel: g.nivel, fuente:"z-score", clave:g.clave };
+    } else {
+      const g = gradeFromPctFEV1(preFev1Pct);
+      gradFEV1 = { nivel: g.nivel, fuente:"%pred", clave:g.clave };
+    }
+
+    const gradFVC  = gradForParam({ pct: preFvcPct, z: z_fvc_pre, kind:"generic" });
+    const gradTLC  = gradForParam({ pct: preTlcPct, z: z_tlc, kind:"generic" });
+    const gradDLCO = gradForParam({ pct: preDlcoPct, z: z_dlco, kind:"generic" });
+    const gradKCO  = gradForParam({ pct: preKcoPct, z: z_kco, kind:"generic" });
+
+    let gradRatio = { nivel:"—", fuente:"na", clave:"na" };
+    if(Number.isFinite(z_ratio)){
+      const g = gradeFromZ(z_ratio);
+      gradRatio = { nivel:g.nivel, fuente:"z-score", clave:g.clave };
+    }
+
+    const diffExtra = diffusionOrientation(preDlcoPct, preKcoPct, diffCut, diffCut);
+
+    const graduationLines = [];
+    graduationLines.push("Alteración funcional graduada:");
+    graduationLines.push("");
+    graduationLines.push(`- FEV1: ${fmtPct(preFev1Pct,1)} | z=${Number.isFinite(z_fev1_pre)?z_fev1_pre.toFixed(2):"—"}\n  ${gradFEV1.nivel} (${gradFEV1.fuente})`);
+    graduationLines.push("");
+    graduationLines.push(`- FVC:  ${fmtPct(preFvcPct,1)} | z=${Number.isFinite(z_fvc_pre)?z_fvc_pre.toFixed(2):"—"}\n  ${gradFVC.nivel} (${gradFVC.fuente})`);
+    graduationLines.push("");
+    graduationLines.push(`- TLC:  ${Number.isFinite(preTlcPct)?preTlcPct.toFixed(1)+"%":"—"} | z=${Number.isFinite(z_tlc)?z_tlc.toFixed(2):"—"}\n  ${gradTLC.nivel} (${gradTLC.fuente})`);
+    graduationLines.push("");
+    graduationLines.push(`- DLCO: ${fmtPct(preDlcoPct,1)} | z=${Number.isFinite(z_dlco)?z_dlco.toFixed(2):"—"}\n  ${gradDLCO.nivel} (${gradDLCO.fuente})`);
+    graduationLines.push("");
+    graduationLines.push(`- KCO:  ${fmtPct(preKcoPct,1)} | z=${Number.isFinite(z_kco)?z_kco.toFixed(2):"—"}\n  ${gradKCO.nivel} (${gradKCO.fuente})`);
+
+    if(Number.isFinite(ratio)){
+      graduationLines.push("");
+      graduationLines.push(`FEV1/FVC: ${(ratio*100).toFixed(1)}% (corte fijo ${(fixedRatio*100).toFixed(1)}%)`);
+      graduationLines.push(`z-score FEV1/FVC: ${Number.isFinite(z_ratio)?z_ratio.toFixed(2):"—"} → ${Number.isFinite(z_ratio)?gradRatio.nivel:"—"}`);
+    }
+
+    if(Number.isFinite(preHb)){
+      graduationLines.push("");
+      graduationLines.push(`Hb: ${preHb.toFixed(1)} g/dL (contextualiza DLCO según protocolo).`);
+    }
+
+    graduationLines.push("");
+    graduationLines.push(`Difusión orientativa: ${diffExtra}`);
+
+    $("graduationTxt").textContent = graduationLines.join("\n");
+
+    // Resumen tabla
+    const rows = [
+      { name:"FEV1%pred", value: fmtPct(preFev1Pct,1), grade: gradFEV1.nivel },
+      { name:"FVC%pred",  value: fmtPct(preFvcPct,1),  grade: gradFVC.nivel },
+      { name:"TLC%pred",  value: Number.isFinite(preTlcPct) ? fmtPct(preTlcPct,1) : "—", grade: gradTLC.nivel },
+      { name:"DLCO%pred", value: fmtPct(preDlcoPct,1), grade: gradDLCO.nivel },
+      { name:"KCO%pred",  value: fmtPct(preKcoPct,1),  grade: gradKCO.nivel },
+      { name:"FEV1/FVC",   value: Number.isFinite(ratio) ? (ratio*100).toFixed(1)+"%" : "—", grade: Number.isFinite(z_ratio) ? gradRatio.nivel : "—" },
+    ];
+    renderSummary(rows);
+  }
+
+  $("btnCalc").addEventListener("click", interpret);
+
+  $("btnClear").addEventListener("click", () => {
+    const ids = [
+      "pre_fev1_L","pre_fvc_L","pre_ratio",
+      "pre_fev1_pct","pre_fvc_pct","z_ratio",
+      "pre_tlc_pct","z_tlc",
+      "pre_dlco_pct","z_dlco",
+      "pre_kco_pct","z_kco",
+      "pre_hb","diff_cut",
+      "z_fev1","z_fvc",
+      "post_fev1_L","post_fvc_L",
+      "z_post_fev1","z_post_fvc",
+      "patternTxt","obstructionSevTxt",
+      "interpretPre","interpretBD","graduationTxt","summaryBody"
+    ];
+    for(const id of ids){
+      const el = $(id);
+      if(!el) continue;
+      if(el.tagName === "TBODY") el.innerHTML = "";
+      else if(el.tagName === "DIV" || el.tagName === "ASIDE" || el.tagName === "SECTION" || el.tagName === "SPAN" || el.tagName === "H2" || el.tagName === "TD") el.textContent = "—";
+      else if(el.value !== undefined) el.value = "";
+    }
+    $("patternTxt").textContent = "—";
+    $("obstructionSevTxt").textContent = "—";
+    $("interpretPre").textContent = "—";
+    $("interpretBD").textContent = "—";
+    $("graduationTxt").textContent = "—";
+    $("summaryBody").innerHTML = "";
+    $("fixed_ratio").value = 0.70;
+    $("diff_cut").value = "";
+  });
+
+  $("btnExample").addEventListener("click", () => {
+    // Demo (ejemplo libre)
+    $("pre_fev1_L").value = "2.05";
+    $("pre_fvc_L").value  = "2.57";
+    $("pre_ratio").value = "0.798";
+    $("pre_fev1_pct").value = "59.7";
+    $("pre_fvc_pct").value = "62.2";
+    $("z_ratio").value = "-1.70";
+
+    $("pre_tlc_pct").value = "78";
+    $("z_tlc").value = "-1.50";
+
+    $("pre_dlco_pct").value = "55";
+    $("z_dlco").value = "-2.30";
+
+    $("pre_kco_pct").value = "70";
+    $("z_kco").value = "-1.80";
+
+    $("pre_hb").value = "13.5";
+    $("diff_cut").value = "80";
+
+    // z PRE prioritarios
+    $("z_fev1").value = "-1.10";
+    $("z_fvc").value = "-0.90";
+
+    // POST
+    $("post_fev1_L").value = "2.20";
+    $("post_fvc_L").value  = "2.65";
+    $("z_post_fev1").value = "-0.80";
+    $("z_post_fvc").value  = "-0.70";
+
+    interpret();
+  });
+</script>
 </body>
 </html>
