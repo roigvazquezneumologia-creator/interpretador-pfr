@@ -413,7 +413,9 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
-  // ✅ CORREGIDO: acepta coma decimal ("2,05") y miles ("1.234,56")
+  // ✅ CORREGIDO (1): acepta coma decimal ("2,05") y miles ("1.234,56")
+  // ✅ CORREGIDO (2): el fallo de "Interpretación incompleta" venía de usar Number.isFinite(obstructed)
+  //    cuando obstructed era boolean (true/false). Ahora se comprueba con typeof === 'boolean'.
   function num(id){
     const el = $(id);
     if(!el) return NaN;
@@ -424,10 +426,10 @@
     let s = raw;
 
     if(s.includes(".") && s.includes(",")){
-      // Ej: "1.234,56" -> "1234.56"
+      // Ej: "1.234,56" => "1234.56"
       s = s.replace(/\./g, "").replace(",", ".");
     } else {
-      // Ej: "2,05" -> "2.05"
+      // Ej: "2,05" => "2.05"
       s = s.replace(",", ".");
     }
 
@@ -569,31 +571,42 @@
     const ratio = Number.isFinite(ratioIn) ? ratioIn : ratioFrom(preFev1L, preFvcL);
 
     const obstrSev = sevObstructionByFEV1Pct(preFev1Pct);
-    const obstructed = Number.isFinite(ratio) ? (ratio < fixedRatio) : NaN;
+
+    // ✅ CORREGIDO: obstructed es boolean, NO usar Number.isFinite(obstructed)
+    let obstructed = null; // true/false cuando ratio y fixedRatio sean válidos
+    if(Number.isFinite(ratio) && Number.isFinite(fixedRatio)){
+      obstructed = (ratio < fixedRatio);
+    }
 
     // Patrón (orientativo sin TLC confirmatoria)
-    const restrProbable = Number.isFinite(preFvcPct) && Number.isFinite(obstructed)
-      ? (preFvcPct < 80 && obstructed === false)
-      : NaN;
+    let restrProbable = null; // boolean cuando obstructed y preFvcPct sean válidos
+    if(typeof obstructed === "boolean" && Number.isFinite(preFvcPct)){
+      restrProbable = (preFvcPct < 80 && obstructed === false);
+    }
 
-    const pattern = Number.isFinite(obstructed)
-      ? (obstructed === true
-          ? `Obstructivo (${obstrSev.sevTxt})`
-          : (Number.isFinite(restrProbable) && restrProbable === true
-              ? "Restricción probable (sin TLC: confirmación pendiente)"
-              : "Sin obstrucción (sin TLC)"))
+    const pattern = (typeof obstructed === "boolean")
+      ? (
+          obstructed === true
+            ? `Obstructivo (${obstrSev.sevTxt})`
+            : (
+                restrProbable === true
+                  ? "Restricción probable (sin TLC: confirmación pendiente)"
+                  : "Sin obstrucción (sin TLC)"
+              )
+        )
       : "Interpretación incompleta";
 
     $("patternTxt").textContent = pattern;
+
     $("obstructionSevTxt").textContent = Number.isFinite(preFev1Pct) ? obstrSev.sevTxt : "—";
 
     $("interpretPre").textContent = [
       `Patrón (PRE): ${pattern}`,
-      `FEV1/FVC PRE: ${Number.isFinite(ratio) ? (ratio*100).toFixed(1)+"%" : "—"} (corte fijo ${(fixedRatio*100).toFixed(1)}%).`,
-      Number.isFinite(obstructed)
+      `FEV1/FVC PRE: ${Number.isFinite(ratio) ? (ratio*100).toFixed(1)+"%" : "—"} (corte fijo ${(Number.isFinite(fixedRatio) ? (fixedRatio*100).toFixed(1) : "—")}%).`,
+      (typeof obstructed === "boolean")
         ? `Obstrucción: ${obstructed ? "Sí" : "No"}${obstructed ? " — severidad: "+obstrSev.sevTxt : ""}.`
         : `Obstrucción: indeterminada (falta FEV1/FVC).`,
-      Number.isFinite(restrProbable)
+      (typeof restrProbable === "boolean")
         ? `Restricción probable (orientativa, sin TLC): ${restrProbable ? "Sí" : "No"} (FVC%medido=${Number.isFinite(preFvcPct)?preFvcPct.toFixed(1)+"%":"—"}).`
         : `Restricción probable: indeterminada (faltan datos).`,
       `Severidad obstrucción por FEV1 %Pred (medido): ${Number.isFinite(preFev1Pct)?obstrSev.sevTxt:"—"}.`
