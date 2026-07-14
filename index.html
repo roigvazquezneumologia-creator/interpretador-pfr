@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ATS clásico + z-scores + FENO/flujo/VC (Pred/Best/%Best/Pred)</title>
+  <title>Analizador — ATS clásico + z-score Medido + FENO/Flujos/VC + N2</title>
   <style>
     :root{
       --bg:#0b1220; --card:rgba(18,27,49,0.85);
@@ -15,13 +15,10 @@
       background: linear-gradient(180deg, #070b14, var(--bg)); color:var(--text);
     }
     header{
-      padding:20px 16px; border-bottom:1px solid var(--line);
+      padding:22px 16px; border-bottom:1px solid var(--line);
       background: rgba(18,27,49,0.55); backdrop-filter: blur(6px);
     }
-    header h1{ margin:0; font-size:18px; letter-spacing:0.2px;}
-    header .sub{
-      margin-top:6px; color:var(--muted); font-size:13px; line-height:1.35; white-space:pre-wrap;
-    }
+    header h1{ margin:0; font-size:18px; letter-spacing:0.2px; }
     header .author{
       margin-top:10px; font-size:13px; color:#c7d2fe; font-weight:900;
     }
@@ -43,7 +40,9 @@
 
     .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     .grid3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
-    .form-group label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .form-group label{
+      display:block; font-size:12px; color:var(--muted); margin-bottom:6px;
+    }
     input{
       width:100%;
       border-radius:10px;
@@ -65,7 +64,10 @@
     .lines{ color:#d1d5db; font-size:13px; line-height:1.45; white-space:pre-wrap; }
 
     .kpi{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    .kpi .item{ border:1px solid var(--line); border-radius:12px; padding:10px; background: rgba(11,18,32,0.25); }
+    .kpi .item{
+      border:1px solid var(--line); border-radius:12px; padding:10px;
+      background: rgba(11,18,32,0.25);
+    }
     .kpi .lab{ color:var(--muted); font-size:12px; }
     .kpi .val{ font-weight:950; font-size:16px; margin-top:6px; }
 
@@ -78,7 +80,8 @@
       font-size:13px; text-align:left;
     }
     th{
-      color:#93c5fd; font-weight:900; background: rgba(96,165,250,0.08);
+      color:#93c5fd; font-weight:900;
+      background: rgba(96,165,250,0.08);
     }
     tr:last-child td{ border-bottom:0; }
 
@@ -109,150 +112,114 @@
 
 <body>
 <header>
-  <h1>ATS clásico + z-scores + FENO/flujo/VC (Pred/Best/%Best/Pred)</h1>
-  <div class="sub">
-    <b>Obstrucción:</b> FEV1/FVC &lt; 0.70 + severidad por FEV1%pred:
-    Leve ≥70, Moderado 60–69, Moderadamente grave 50–59, Grave 35–49, Muy grave &lt;35.<br/>
-    <b>Broncodilatador ATS:</b> Δ≥12% y ≥200 mL en FEV1 o FVC. (y se muestra Δz con z-score POST si existe).<br/>
-    <b>Gradación z:</b> Leve si $z &gt; -2.5$; Moderada si $-4.0 \le z \le -2.5$; Grave si $z &lt; -4.0$.<br/>
-    <b>Tabla Pred/Best/%Best/Pred:</b> % = $100\\times (Best/Pred)$ para FENO, PEF, MMEF75/25, VC IN y VC MAX. <br/>
-    <b>Excepción:</b> PIF solo tiene Best → % queda en “—”.
-  </div>
-
-  <div class="author">
-    Autor: DR. FRANCISCO JOSE ROIG VAZQUEZ — MÉDICO NEUMÓLOGO
-  </div>
+  <h1>Analizador de pruebas funcionales respiratorias</h1>
+  <div class="author">Autor: DR. FRANCISCO JOSE ROIG VAZQUEZ — MÉDICO NEUMÓLOGO</div>
 </header>
 
 <main>
   <section class="card">
-    <h2>Datos PRE</h2>
+    <h2>Espirometría PRE (valores medidos)</h2>
 
     <div class="grid3">
       <div class="form-group">
-        <label>FEV1 (L) PRE</label>
+        <label>FEV1 (L) Medido</label>
         <input id="pre_fev1_L" type="number" step="0.01" placeholder="Ej: 2.05" />
       </div>
       <div class="form-group">
-        <label>FVC (L) PRE</label>
+        <label>FVC (L) Medido</label>
         <input id="pre_fvc_L" type="number" step="0.01" placeholder="Ej: 2.57" />
       </div>
       <div class="form-group">
-        <label>FEV1/FVC PRE (si lo tienes)</label>
+        <label>FEV1/FVC Medido (si lo tienes)</label>
         <input id="pre_ratio" type="number" step="0.001" placeholder="Ej: 0.80" />
       </div>
     </div>
 
     <div class="grid3">
       <div class="form-group">
-        <label>FEV1 % Pred PRE</label>
+        <label>FEV1 % Pred Medido</label>
         <input id="pre_fev1_pct" type="number" step="0.1" placeholder="Ej: 59.7" />
       </div>
       <div class="form-group">
-        <label>FVC % Pred PRE</label>
+        <label>FVC % Pred Medido</label>
         <input id="pre_fvc_pct" type="number" step="0.1" placeholder="Ej: 62.2" />
       </div>
       <div class="form-group">
-        <label>z-score FEV1/FVC PRE (si disponible)</label>
+        <label>z-score FEV1 Medido</label>
+        <input id="z_fev1_med" type="number" step="0.01" placeholder="Ej: -1.10" />
+      </div>
+    </div>
+
+    <div class="grid3" style="margin-top:10px;">
+      <div class="form-group">
+        <label>z-score FVC Medido</label>
+        <input id="z_fvc_med" type="number" step="0.01" placeholder="Ej: -0.90" />
+      </div>
+      <div class="form-group">
+        <label>z-score FEV1/FVC Medido (si disponible)</label>
         <input id="z_ratio" type="number" step="0.01" placeholder="Ej: -1.70" />
       </div>
-    </div>
-
-    <div class="grid2">
       <div class="form-group">
-        <label>TLC % Pred PRE (si tienes)</label>
+        <label>TLC % Pred (si tienes de espirometría/pletismo)</label>
         <input id="pre_tlc_pct" type="number" step="0.1" placeholder="Ej: 78" />
       </div>
-      <div class="form-group">
-        <label>z-score TLC PRE (si lo tienes)</label>
-        <input id="z_tlc" type="number" step="0.01" placeholder="Ej: -1.50" />
-      </div>
     </div>
 
-    <div class="grid2">
+    <div class="grid2" style="margin-top:10px;">
       <div class="form-group">
-        <label>DLCO % Pred PRE</label>
+        <label>DLCO % Pred Medido</label>
         <input id="pre_dlco_pct" type="number" step="0.1" placeholder="Ej: 55" />
       </div>
       <div class="form-group">
-        <label>z-score DLCO PRE</label>
-        <input id="z_dlco" type="number" step="0.01" placeholder="Ej: -2.30" />
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div class="form-group">
-        <label>KCO % Pred PRE</label>
+        <label>KCO % Pred Medido</label>
         <input id="pre_kco_pct" type="number" step="0.1" placeholder="Ej: 70" />
       </div>
-      <div class="form-group">
-        <label>z-score KCO PRE</label>
-        <input id="z_kco" type="number" step="0.01" placeholder="Ej: -1.80" />
-      </div>
     </div>
 
-    <div class="grid2">
+    <div class="grid2" style="margin-top:10px;">
       <div class="form-group">
         <label>Hb (g/dL) (opcional)</label>
         <input id="pre_hb" type="number" step="0.1" placeholder="Ej: 13.5" />
       </div>
       <div class="form-group">
-        <label>corte bajo DLCO/KCO (%pred) (opcional)</label>
+        <label>Umbral “corte bajo” DLCO/KCO (%pred) (opcional)</label>
         <input id="diff_cut" type="number" step="0.1" placeholder="Por defecto 80" />
       </div>
     </div>
 
     <div class="block">
-      <h3>z-score PRE (prioritarios para gradación)</h3>
-      <div class="grid2">
+      <h3>Post broncodilatador ATS (valores medidos)</h3>
+
+      <div class="grid3">
         <div class="form-group">
-          <label>z-score FEV1 PRE</label>
-          <input id="z_fev1" type="number" step="0.01" placeholder="Ej: -1.10" />
+          <label>FEV1 (L) POST Medido</label>
+          <input id="post_fev1_L" type="number" step="0.01" placeholder="Ej: 2.20" />
         </div>
         <div class="form-group">
-          <label>z-score FVC PRE</label>
-          <input id="z_fvc" type="number" step="0.01" placeholder="Ej: -0.90" />
+          <label>FVC (L) POST Medido</label>
+          <input id="post_fvc_L" type="number" step="0.01" placeholder="Ej: 2.65" />
+        </div>
+        <div class="form-group">
+          <label>z-score FEV1 Medido POST</label>
+          <input id="z_post_fev1_med" type="number" step="0.01" placeholder="Ej: -0.80" />
         </div>
       </div>
-      <div class="hint">
-        Para la tabla “Alteración funcional graduada”: <b>FEV1 usa SIEMPRE z-score si existe</b>. Si no, usa %pred.
-      </div>
-    </div>
 
-    <h2 style="margin-top:14px;">Datos POST (ATS)</h2>
-
-    <div class="grid3">
-      <div class="form-group">
-        <label>FEV1 (L) POST</label>
-        <input id="post_fev1_L" type="number" step="0.01" placeholder="Ej: 2.20" />
-      </div>
-      <div class="form-group">
-        <label>FVC (L) POST</label>
-        <input id="post_fvc_L" type="number" step="0.01" placeholder="Ej: 2.65" />
-      </div>
-      <div class="form-group">
-        <label>z-score FEV1 POST</label>
-        <input id="z_post_fev1" type="number" step="0.01" placeholder="Ej: -0.80" />
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div class="form-group">
-        <label>z-score FVC POST</label>
-        <input id="z_post_fvc" type="number" step="0.01" placeholder="Ej: -0.70" />
-      </div>
-      <div class="form-group">
-        <label>Ratio fijo (por defecto 0.70)</label>
-        <input id="fixed_ratio" type="number" step="0.001" value="0.70" />
+      <div class="grid2" style="margin-top:10px;">
+        <div class="form-group">
+          <label>z-score FVC Medido POST</label>
+          <input id="z_post_fvc_med" type="number" step="0.01" placeholder="Ej: -0.70" />
+        </div>
+        <div class="form-group">
+          <label>Ratio fijo obstrucción (por defecto 0.70)</label>
+          <input id="fixed_ratio" type="number" step="0.001" value="0.70" />
+        </div>
       </div>
     </div>
 
     <div class="block">
-      <h3>FENO, PEF, PIF, MMEF75/25, VC IN, VC MAX — Pred y Best</h3>
-      <div class="hint">
-        <b>Best</b> se muestra como <b>Best (Medido)</b> siempre. %Best/Pred = $100\\times (Best/Pred)$
-        para parámetros con Pred. En <b>PIF</b> solo hay Best → % queda “—”.
-      </div>
+      <h3>FENO y flujos/VC — Pred / Best (Medido) / % (Best/Pred)</h3>
+      <div class="hint">PIF en Vintus solo tiene Best: por eso %Best/Pred se muestra como “—”.</div>
 
       <div class="grid2" style="margin-top:10px;">
         <div class="block" style="margin-top:0;">
@@ -272,17 +239,16 @@
         </div>
       </div>
 
-      <div class="grid2">
-        <div class="block" style="margin-top:10px;">
+      <div class="grid2" style="margin-top:10px;">
+        <div class="block" style="margin-top:0;">
           <h3 style="margin-top:0;">PIF</h3>
-          <div class="form-group">
-            <label>PIF Best (Medido)</label>
-            <input id="pif_best" type="number" step="0.1" placeholder="Ej: 4.9" />
+          <div class="grid1" style="display:block;">
+            <div class="form-group"><label>PIF Best (Medido)</label><input id="pif_best" type="number" step="0.1" placeholder="Ej: 4.9" /></div>
           </div>
-          <div class="hint">No hay columna Pred para PIF en Vintus → % queda “—”.</div>
+          <div class="hint">Sin Pred en tu sistema → % queda “—”.</div>
         </div>
 
-        <div class="block" style="margin-top:10px;">
+        <div class="block" style="margin-top:0;">
           <h3 style="margin-top:0;">MMEF75/25</h3>
           <div class="grid2">
             <div class="form-group"><label>MMEF75/25 Pred</label><input id="mmf_pred" type="number" step="0.01" placeholder="Ej: 2.20" /></div>
@@ -291,8 +257,8 @@
         </div>
       </div>
 
-      <div class="grid2">
-        <div class="block" style="margin-top:10px;">
+      <div class="grid2" style="margin-top:10px;">
+        <div class="block" style="margin-top:0;">
           <h3 style="margin-top:0;">VC IN</h3>
           <div class="grid2">
             <div class="form-group"><label>VC IN Pred</label><input id="vc_in_pred" type="number" step="0.01" placeholder="Ej: 3.60" /></div>
@@ -300,7 +266,7 @@
           </div>
         </div>
 
-        <div class="block" style="margin-top:10px;">
+        <div class="block" style="margin-top:0;">
           <h3 style="margin-top:0;">VC MAX</h3>
           <div class="grid2">
             <div class="form-group"><label>VC MAX Pred</label><input id="vc_max_pred" type="number" step="0.01" placeholder="Ej: 4.10" /></div>
@@ -308,12 +274,70 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="btnbar">
-        <button id="btnCalc">Interpretar</button>
-        <button class="secondary" id="btnClear" type="button">Limpiar</button>
-        <button class="danger" id="btnExample" type="button">Ejemplo</button>
+    <div class="block">
+      <h3>Volúmenes pulmonares N2 (lavado de nitrógeno) — Pred / Best (Medido) / % (Best/Pred)</h3>
+
+      <div class="grid2" style="margin-top:10px;">
+        <div class="block" style="margin-top:0;">
+          <h3 style="margin-top:0;">TLC N2</h3>
+          <div class="grid2">
+            <div class="form-group"><label>TLC N2 Pred</label><input id="tlc_n2_pred" type="number" step="0.1" placeholder="Ej: 6.20" /></div>
+            <div class="form-group"><label>TLC N2 Best (Medido)</label><input id="tlc_n2_best" type="number" step="0.1" placeholder="Ej: 5.10" /></div>
+          </div>
+        </div>
+
+        <div class="block" style="margin-top:0;">
+          <h3 style="margin-top:0;">VC MAX N2</h3>
+          <div class="grid2">
+            <div class="form-group"><label>VC MAX N2 Pred</label><input id="vcmax_n2_pred" type="number" step="0.1" placeholder="Ej: 4.80" /></div>
+            <div class="form-group"><label>VC MAX N2 Best (Medido)</label><input id="vcmax_n2_best" type="number" step="0.1" placeholder="Ej: 4.00" /></div>
+          </div>
+        </div>
       </div>
+
+      <div class="grid2" style="margin-top:10px;">
+        <div class="block" style="margin-top:0;">
+          <h3 style="margin-top:0;">IC N2</h3>
+          <div class="grid2">
+            <div class="form-group"><label>IC N2 Pred</label><input id="ic_n2_pred" type="number" step="0.1" placeholder="Ej: 2.60" /></div>
+            <div class="form-group"><label>IC N2 Best (Medido)</label><input id="ic_n2_best" type="number" step="0.1" placeholder="Ej: 2.10" /></div>
+          </div>
+        </div>
+
+        <div class="block" style="margin-top:0;">
+          <h3 style="margin-top:0;">RV N2</h3>
+          <div class="grid2">
+            <div class="form-group"><label>RV N2 Pred</label><input id="rv_n2_pred" type="number" step="0.1" placeholder="Ej: 1.80" /></div>
+            <div class="form-group"><label>RV N2 Best (Medido)</label><input id="rv_n2_best" type="number" step="0.1" placeholder="Ej: 2.50" /></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:10px;">
+        <div class="block" style="margin-top:0;">
+          <h3 style="margin-top:0;">FRC N2</h3>
+          <div class="grid2">
+            <div class="form-group"><label>FRC N2 Pred</label><input id="frc_n2_pred" type="number" step="0.1" placeholder="Ej: 3.10" /></div>
+            <div class="form-group"><label>FRC N2 Best (Medido)</label><input id="frc_n2_best" type="number" step="0.1" placeholder="Ej: 3.60" /></div>
+          </div>
+        </div>
+
+        <div class="block" style="margin-top:0;">
+          <h3 style="margin-top:0;">ERV N2</h3>
+          <div class="grid2">
+            <div class="form-group"><label>ERV N2 Pred</label><input id="erv_n2_pred" type="number" step="0.1" placeholder="Ej: 1.10" /></div>
+            <div class="form-group"><label>ERV N2 Best (Medido)</label><input id="erv_n2_best" type="number" step="0.1" placeholder="Ej: 0.60" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btnbar">
+      <button id="btnCalc">Interpretar</button>
+      <button class="secondary" id="btnClear" type="button">Limpiar</button>
+      <button class="danger" id="btnExample" type="button">Ejemplo</button>
     </div>
   </section>
 
@@ -326,7 +350,7 @@
         <div class="val" id="patternTxt">—</div>
       </div>
       <div class="item">
-        <div class="lab">Obstrucción (severidad por FEV1%pred)</div>
+        <div class="lab">Obstrucción (por FEV1 % Pred Medido)</div>
         <div class="val" id="obstructionSevTxt">—</div>
       </div>
     </div>
@@ -337,24 +361,24 @@
     </div>
 
     <div class="block">
-      <h3>Broncodilatador (ATS clásico + Δz)</h3>
+      <h3>Broncodilatador (ATS clásico + Δz-score Medido)</h3>
       <div class="lines" id="interpretBD">—</div>
     </div>
 
     <div class="block">
-      <h3>Alteración funcional graduada (z-score prioritario; FEV1 SIEMPRE z si existe)</h3>
+      <h3>Alteración funcional graduada (z-score Medido; sin z-score en difusión)</h3>
       <div class="lines" id="graduationTxt">—</div>
     </div>
 
     <div class="block">
-      <h3>FENO/PEF/PIF/MMEF75/25/VC IN/VC MAX — Pred / Best / %Best/Pred</h3>
+      <h3>FENO/Flujos/VC + Volúmenes N2 — Pred / Best (Medido) / % (Best/Pred)</h3>
       <table>
         <thead>
           <tr>
             <th>Parámetro</th>
             <th>Pred</th>
             <th>Best (Medido)</th>
-            <th>%Best/Pred</th>
+            <th>% (Best/Pred)</th>
           </tr>
         </thead>
         <tbody id="flowTableBody"></tbody>
@@ -364,8 +388,8 @@
 </main>
 
 <footer>
-  %Best/Pred se calcula como $100\\times (Best/Pred)$ cuando existe Pred.  
-  Interpretación orientativa: usa el informe completo del laboratorio para decisiones clínicas.
+  Nota: el z-score de difusión (DLCO/KCO) se omite en esta versión; la difusión se interpreta con %Pred.
+  % (Best/Pred) = $100\\times\\left(\\frac{Best}{Pred}\\right)$.
 </footer>
 
 <script>
@@ -388,40 +412,37 @@
     return fev1L / fvcL;
   }
 
-  // Severidad obstrucción por FEV1%pred (tus cortes)
   function sevObstructionByFEV1Pct(fev1Pct){
-    if(!Number.isFinite(fev1Pct)) return { sevTxt:"—", sevKey:"na" };
-    if(fev1Pct >= 70) return { sevTxt:"Leve", sevKey:"leve" };
-    if(fev1Pct >= 60) return { sevTxt:"Moderado", sevKey:"moderado" };
-    if(fev1Pct >= 50) return { sevTxt:"Moderadamente grave", sevKey:"mod-grave" };
-    if(fev1Pct >= 35) return { sevTxt:"Grave", sevKey:"grave" };
-    return { sevTxt:"Muy grave", sevKey:"muy-grave" };
+    if(!Number.isFinite(fev1Pct)) return { sevTxt:"—" };
+    if(fev1Pct >= 70) return { sevTxt:"Leve" };
+    if(fev1Pct >= 60) return { sevTxt:"Moderado" };
+    if(fev1Pct >= 50) return { sevTxt:"Moderadamente grave" };
+    if(fev1Pct >= 35) return { sevTxt:"Grave" };
+    return { sevTxt:"Muy grave" };
   }
 
-  // Tu regla exacta de z
+  // Regla z-score (tu regla)
   function gradeFromZ(z){
-    if(!Number.isFinite(z)) return { nivel:"—", clave:"na" };
-    if(z > -2.5) return { nivel:"Leve (z > -2.5)", clave:"leve" };
-    if(z >= -4.0 && z <= -2.5) return { nivel:"Moderada (−4.0 ≤ z ≤ −2.5)", clave:"moderada" };
-    return { nivel:"Grave (z < -4.0)", clave:"grave" };
+    if(!Number.isFinite(z)) return { nivel:"—" };
+    if(z > -2.5) return { nivel:"Leve (z > -2.5)" };
+    if(z >= -4.0 && z <= -2.5) return { nivel:"Moderada (−4.0 ≤ z ≤ −2.5)" };
+    return { nivel:"Grave (z < -4.0)" };
   }
 
   function gradeFromPctGeneric(pct){
-    if(!Number.isFinite(pct)) return { nivel:"—", fuente:"na" };
-    if(pct >= 80) return { nivel:"Leve / dentro de lo esperado", fuente:"%pred" };
-    if(pct >= 60) return { nivel:"Moderada alteración", fuente:"%pred" };
-    return { nivel:"Grave / marcada alteración", fuente:"%pred" };
-  }
-
-  function gradeFromPctFEV1(fev1Pct){
-    const s = sevObstructionByFEV1Pct(fev1Pct);
-    return { nivel:s.sevTxt, fuente:"%pred", clave:s.sevKey };
+    if(!Number.isFinite(pct)) return { nivel:"—" };
+    if(pct >= 80) return { nivel:"Leve / dentro de lo esperado" };
+    if(pct >= 60) return { nivel:"Moderada alteración" };
+    return { nivel:"Grave / marcada alteración" };
   }
 
   function bronchodilatorATSClassic(preFev1L, preFvcL, postFev1L, postFvcL){
     const anyPost = Number.isFinite(postFev1L) || Number.isFinite(postFvcL);
-    if(!anyPost) return { met:false, text:"No evaluable con ATS: faltan datos POST.", details:{} };
-    if(!Number.isFinite(preFev1L) || !Number.isFinite(preFvcL)) return { met:false, text:"No evaluable con ATS: faltan datos PRE.", details:{} };
+    if(!anyPost) return { met:false, text:"No evaluable con ATS: faltan datos POST." };
+
+    if(!Number.isFinite(preFev1L) || !Number.isFinite(preFvcL)){
+      return { met:false, text:"No evaluable con ATS: faltan datos PRE." };
+    }
 
     const dFev1 = Number.isFinite(postFev1L) ? (postFev1L - preFev1L) : NaN;
     const dFvc  = Number.isFinite(postFvcL)  ? (postFvcL  - preFvcL)  : NaN;
@@ -436,42 +457,73 @@
       const parts = [];
       if(okFev1) parts.push("FEV1");
       if(okFvc) parts.push("FVC");
-      return { met:true, text:`ATS clásico positivo: mejora ≥12% y ≥200 mL en ${parts.join(" y ")}.`, details:{ dFev1, pctFev1, dFvc, pctFvc, okFev1, okFvc } };
+      return {
+        met:true,
+        text:`ATS clásico positivo: mejora ≥12% y ≥200 mL en ${parts.join(" y ")}.`,
+        details:{ dFev1, pctFev1, dFvc, pctFvc, okFev1, okFvc }
+      };
     }
-    return { met:false, text:"ATS clásico negativo: no cumple Δ≥12% y ≥200 mL en FEV1 ni en FVC.", details:{ dFev1, pctFev1, dFvc, pctFvc, okFev1, okFvc } };
+
+    return {
+      met:false,
+      text:"ATS clásico negativo: no cumple Δ≥12% y ≥200 mL en FEV1 ni en FVC.",
+      details:{ dFev1, pctFev1, dFvc, pctFvc, okFev1, okFvc }
+    };
   }
 
   function diffusionOrientation(dlcoPct, kcoPct, dlcoCut, kcoCut){
     const dlLow = Number.isFinite(dlcoPct) ? (dlcoPct < dlcoCut) : NaN;
     const kLow  = Number.isFinite(kcoPct)  ? (kcoPct  < kcoCut)  : NaN;
+
     if(!Number.isFinite(dlLow) && !Number.isFinite(kLow)) return "—";
-    if(dlLow === true && kLow === true) return "Orientación: alteración del intercambio gaseoso y/o área efectiva reducida (correlacionar).";
-    if(dlLow === true && kLow === false) return "Orientación: DLCO baja con KCO preservada (correlacionar; considerar Hb).";
+    if(dlLow === true && kLow === true) return "Orientación: alteración del intercambio gaseoso (correlacionar).";
+    if(dlLow === true && kLow === false) return "Orientación: DLCO baja con KCO preservada (correlacionar; considerar Hb según protocolo).";
     if(dlLow === false && kLow === true) return "Orientación: KCO baja con DLCO preservada (correlacionar).";
     return "Orientación: DLCO/KCO sin disminución significativa.";
   }
 
-  function buildPredBestRow(name, pred, best, withPred=true){
-    const out = { name, pred, best, pct: NaN, hasPct: false };
-    if(withPred && Number.isFinite(pred) && pred !== 0 && Number.isFinite(best)){
-      out.pct = (best / pred) * 100;
-      out.hasPct = true;
+  function buildRowPredBest(name, predId, bestId, hasPred=true){
+    const pred = num(predId);
+    const best = num(bestId);
+    let pct = NaN;
+    let hasPct = false;
+
+    if(hasPred && Number.isFinite(pred) && pred !== 0 && Number.isFinite(best)){
+      pct = (best / pred) * 100;
+      hasPct = true;
     }
-    return out;
+    return { name, pred, best, pct, hasPct, hasAny: Number.isFinite(pred) || Number.isFinite(best) };
   }
 
-  function renderFlowTable(){
+  function renderAllPredBestTable(){
+    // FENO/PEF/MMEF/VC: Pred+Best
+    // PIF: solo Best (Pred omitido) => % queda —
     const rows = [
-      buildPredBestRow("FENO",        num("feno_pred"),   num("feno_best"),   true),
-      buildPredBestRow("PEF",         num("pef_pred"),    num("pef_best"),    true),
-      buildPredBestRow("PIF",         NaN,                num("pif_best"),    false),
-      buildPredBestRow("MMEF75/25",  num("mmf_pred"),    num("mmf_best"),    true),
-      buildPredBestRow("VC IN",      num("vc_in_pred"),  num("vc_in_best"),  true),
-      buildPredBestRow("VC MAX",     num("vc_max_pred"), num("vc_max_best"), true),
-    ];
+      buildRowPredBest("FENO", "feno_pred", "feno_best", true),
+      buildRowPredBest("PEF", "pef_pred", "pef_best", true),
+      buildRowPredBest("PIF", null, "pif_best", false),
+      buildRowPredBest("MMEF75/25", "mmf_pred", "mmf_best", true),
+      buildRowPredBest("VC IN", "vc_in_pred", "vc_in_best", true),
+      buildRowPredBest("VC MAX", "vc_max_pred", "vc_max_best", true),
+
+      // N2
+      buildRowPredBest("TLC N2", "tlc_n2_pred", "tlc_n2_best", true),
+      buildRowPredBest("VC MAX N2", "vcmax_n2_pred", "vcmax_n2_best", true),
+      buildRowPredBest("IC N2", "ic_n2_pred", "ic_n2_best", true),
+      buildRowPredBest("RV N2", "rv_n2_pred", "rv_n2_best", true),
+      buildRowPredBest("FRC N2", "frc_n2_pred", "frc_n2_best", true),
+      buildRowPredBest("ERV N2", "erv_n2_pred", "erv_n2_best", true),
+    ].map(r => {
+      // si no hay pred (PIF) => aseguro que r.pred sea NaN
+      if(r.name === "PIF") {
+        return { ...r, pred: NaN, hasPct:false };
+      }
+      return r;
+    });
 
     const tbody = $("flowTableBody");
     tbody.innerHTML = "";
+
     for(const r of rows){
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -487,19 +539,19 @@
   function interpret(){
     const fixedRatio = num("fixed_ratio");
 
-    // PRE
-    const preFev1L = num("pre_fev1_L");
-    const preFvcL  = num("pre_fvc_L");
+    // PRE medido
+    const preFev1L   = num("pre_fev1_L");
+    const preFvcL    = num("pre_fvc_L");
     const preFev1Pct = num("pre_fev1_pct");
     const preFvcPct  = num("pre_fvc_pct");
 
     const ratioIn = num("pre_ratio");
     const ratio = Number.isFinite(ratioIn) ? ratioIn : ratioFrom(preFev1L, preFvcL);
 
-    // Obstrucción + patrón (orientativo sin TLC confirmatoria)
     const obstrSev = sevObstructionByFEV1Pct(preFev1Pct);
     const obstructed = Number.isFinite(ratio) ? (ratio < fixedRatio) : NaN;
 
+    // Patrón orientativo sin TLC confirmatoria
     const restrProbable = Number.isFinite(preFvcPct) && Number.isFinite(obstructed)
       ? (preFvcPct < 80 && obstructed === false)
       : NaN;
@@ -519,28 +571,30 @@
       `Patrón (PRE): ${pattern}`,
       `FEV1/FVC PRE: ${Number.isFinite(ratio) ? (ratio*100).toFixed(1)+"%" : "—"} (corte fijo ${(fixedRatio*100).toFixed(1)}%).`,
       Number.isFinite(obstructed)
-        ? `Obstrucción: ${obstructed ? "Sí" : "No"}${obstructed ? ` — severidad: ${obstrSev.sevTxt}` : ""}.`
+        ? `Obstrucción: ${obstructed ? "Sí" : "No"}${obstructed ? " — severidad: "+obstrSev.sevTxt : ""}.`
         : `Obstrucción: indeterminada (falta FEV1/FVC).`,
       Number.isFinite(restrProbable)
-        ? `Restricción probable (orientativa, sin TLC): ${restrProbable ? "Sí" : "No"} (FVC%pred=${Number.isFinite(preFvcPct)?preFvcPct.toFixed(1)+"%":"—"}).`
-        : `Restricción probable: indeterminada (faltan datos FVC%pred u obstrucción).`,
-      `Severidad obstrucción por FEV1%pred: ${Number.isFinite(preFev1Pct) ? obstrSev.sevTxt : "—"}.`
+        ? `Restricción probable (orientativa, sin TLC): ${restrProbable ? "Sí" : "No"} (FVC%medido=${Number.isFinite(preFvcPct)?preFvcPct.toFixed(1)+"%":"—"}).`
+        : `Restricción probable: indeterminada (faltan datos).`,
+      `Severidad obstrucción por FEV1 %Pred (medido): ${Number.isFinite(preFev1Pct) ? obstrSev.sevTxt : "—"}.`
     ].join("\n");
 
-    // Bronco ATS + Δz
+    // Bronco ATS
     const postFev1L = num("post_fev1_L");
     const postFvcL  = num("post_fvc_L");
-    const bd = bronchodilatorATSClassic(preFev1L, preFvcL, postFev1L, postFvcL);
 
-    const z_fev1_pre  = num("z_fev1");
-    const z_fvc_pre   = num("z_fvc");
-    const z_fev1_post = num("z_post_fev1");
-    const z_fvc_post  = num("z_post_fvc");
+    const ats = bronchodilatorATSClassic(preFev1L, preFvcL, postFev1L, postFvcL);
+
+    // Δz-score Medido (FEV1/FVC)
+    const z_fev1_pre  = num("z_fev1_med");
+    const z_fvc_pre   = num("z_fvc_med");
+    const z_fev1_post = num("z_post_fev1_med");
+    const z_fvc_post  = num("z_post_fvc_med");
 
     const dzFev1 = (Number.isFinite(z_fev1_pre) && Number.isFinite(z_fev1_post)) ? (z_fev1_post - z_fev1_pre) : NaN;
     const dzFvc  = (Number.isFinite(z_fvc_pre)  && Number.isFinite(z_fvc_post))  ? (z_fvc_post  - z_fvc_pre)  : NaN;
 
-    const d = bd.details || {};
+    const d = ats.details || {};
     const atsDetails = [
       "",
       "Detalles ATS clásico:",
@@ -553,71 +607,63 @@
     if(Number.isFinite(dzFvc))  dzParts.push(`FVC: Δz=${dzFvc.toFixed(2)} → ${gradeFromZ(z_fvc_post).nivel}`);
 
     const dzTxt = dzParts.length
-      ? "\n\nGradación por cambio de z-score (orientativa):\n" + dzParts.join("\n")
-      : "\n\nΔz no disponible: faltan z-scores PRE/POST de FEV1 y/o FVC.";
+      ? "\n\nGradación por cambio de z-score Medido (orientativa):\n" + dzParts.join("\n")
+      : "\n\nΔz Medido no disponible: faltan z-score PRE/POST para FEV1 y/o FVC.";
 
-    $("interpretBD").textContent = bd.text + atsDetails + dzTxt;
+    $("interpretBD").textContent = ats.text + atsDetails + dzTxt;
 
-    // Alteración funcional graduada
-    const z_tlc = num("z_tlc");
-    const preTlcPct = num("pre_tlc_pct");
-
-    const preDlcoPct = num("pre_dlco_pct");
-    const z_dlco = num("z_dlco");
-
-    const preKcoPct = num("pre_kco_pct");
-    const z_kco = num("z_kco");
-
+    // Gradación funcional (sin z-score en difusión; usa z-score Medido en espirometría si existe)
+    const z_tlc = num("z_tlc"); // opcional si existiera en tu UI, pero aquí no lo incluimos. Mantengo por compatibilidad.
     const preHb = num("pre_hb");
     const diffCut = Number.isFinite(num("diff_cut")) ? num("diff_cut") : 80;
 
+    // DLCO/KCO: solo con %pred medido
+    const diffExtra = diffusionOrientation(num("pre_dlco_pct"), num("pre_kco_pct"), diffCut, diffCut);
+
     const gradFEV1 = Number.isFinite(z_fev1_pre)
-      ? { nivel: gradeFromZ(z_fev1_pre).nivel, fuente:"z-score" }
-      : gradeFromPctFEV1(preFev1Pct);
+      ? gradeFromZ(z_fev1_pre)
+      : gradeFromPctGeneric(preFev1Pct);
 
     const gradFVC  = Number.isFinite(z_fvc_pre)
-      ? { nivel: gradeFromZ(z_fvc_pre).nivel, fuente:"z-score" }
+      ? gradeFromZ(z_fvc_pre)
       : gradeFromPctGeneric(preFvcPct);
 
-    const gradTLC  = Number.isFinite(z_tlc)
-      ? { nivel: gradeFromZ(z_tlc).nivel, fuente:"z-score" }
-      : gradeFromPctGeneric(preTlcPct);
+    const preDlcoPct = num("pre_dlco_pct");
+    const preKcoPct  = num("pre_kco_pct");
 
-    const gradDLCO = Number.isFinite(z_dlco)
-      ? { nivel: gradeFromZ(z_dlco).nivel, fuente:"z-score" }
-      : gradeFromPctGeneric(preDlcoPct);
+    // TLC: si tienes z-score TLC en tus datos (no la UI, pero puedes meterla si la añadimos luego).
+    const gradTLC = Number.isFinite(z_tlc)
+      ? gradeFromZ(z_tlc)
+      : gradeFromPctGeneric(num("pre_tlc_pct"));
 
-    const gradKCO  = Number.isFinite(z_kco)
-      ? { nivel: gradeFromZ(z_kco).nivel, fuente:"z-score" }
-      : gradeFromPctGeneric(preKcoPct);
-
-    const diffExtra = diffusionOrientation(preDlcoPct, preKcoPct, diffCut, diffCut);
+    const gradDLCO = gradeFromPctGeneric(preDlcoPct);
+    const gradKCO  = gradeFromPctGeneric(preKcoPct);
 
     $("graduationTxt").textContent = [
       "Alteración funcional graduada:",
       "",
-      `- FEV1: ${Number.isFinite(preFev1Pct)?preFev1Pct.toFixed(1)+"%":"—"} | z=${Number.isFinite(z_fev1_pre)?z_fev1_pre.toFixed(2):"—"}`,
-      `  ${gradFEV1.nivel} (${gradFEV1.fuente})`,
+      `- FEV1 (medido): %pred=${Number.isFinite(preFev1Pct)?preFev1Pct.toFixed(1)+"%":"—"} | z=${Number.isFinite(z_fev1_pre)?z_fev1_pre.toFixed(2):"—"}`,
+      `  ${gradFEV1.nivel}`,
       "",
-      `- FVC: ${Number.isFinite(preFvcPct)?preFvcPct.toFixed(1)+"%":"—"} | z=${Number.isFinite(z_fvc_pre)?z_fvc_pre.toFixed(2):"—"}`,
-      `  ${gradFVC.nivel} (${gradFVC.fuente})`,
+      `- FVC (medido): %pred=${Number.isFinite(preFvcPct)?preFvcPct.toFixed(1)+"%":"—"} | z=${Number.isFinite(z_fvc_pre)?z_fvc_pre.toFixed(2):"—"}`,
+      `  ${gradFVC.nivel}`,
       "",
-      `- TLC: ${Number.isFinite(preTlcPct)?preTlcPct.toFixed(1)+"%":"—"} | z=${Number.isFinite(z_tlc)?z_tlc.toFixed(2):"—"}`,
-      `  ${gradTLC.nivel} (${gradTLC.fuente})`,
+      `- TLC: ${Number.isFinite(num("pre_tlc_pct"))?num("pre_tlc_pct").toFixed(1)+"%":"—"} ${Number.isFinite(z_tlc) ? "| z="+z_tlc.toFixed(2) : ""}`,
+      `  ${gradTLC.nivel}`,
       "",
-      `- DLCO: ${Number.isFinite(preDlcoPct)?preDlcoPct.toFixed(1)+"%":"—"} | z=${Number.isFinite(z_dlco)?z_dlco.toFixed(2):"—"}`,
-      `  ${gradDLCO.nivel} (${gradDLCO.fuente})`,
+      `- DLCO: ${Number.isFinite(preDlcoPct)?preDlcoPct.toFixed(1)+"%":"—"}`,
+      `  ${gradDLCO.nivel}`,
       "",
-      `- KCO: ${Number.isFinite(preKcoPct)?preKcoPct.toFixed(1)+"%":"—"} | z=${Number.isFinite(z_kco)?z_kco.toFixed(2):"—"}`,
-      `  ${gradKCO.nivel} (${gradKCO.fuente})`,
+      `- KCO: ${Number.isFinite(preKcoPct)?preKcoPct.toFixed(1)+"%":"—"}`,
+      `  ${gradKCO.nivel}`,
       "",
-      Number.isFinite(preHb) ? `Hb: ${preHb.toFixed(1)} g/dL (contexto DLCO).` : "Hb: —",
+      Number.isFinite(preHb) ? `Hb: ${preHb.toFixed(1)} g/dL (contexto).` : "Hb: —",
       "",
-      `Difusión orientativa: ${diffExtra}`
+      `Difusión (sin z-score): ${diffExtra}`
     ].join("\n");
 
-    // Tabla Pred/Best/%Best/Pred
-    renderFlowTable();
+    // Tabla Pred/Best/%best/pred (FENO/Flujos/VC + N2)
+    renderAllPredBestTable();
   }
 
   $("btnCalc").addEventListener("click", interpret);
@@ -625,77 +671,79 @@
   $("btnClear").addEventListener("click", () => {
     const ids = [
       // PRE
-      "pre_fev1_L","pre_fvc_L","pre_ratio","pre_fev1_pct","pre_fvc_pct","z_ratio",
-      "pre_tlc_pct","z_tlc","pre_dlco_pct","z_dlco","pre_kco_pct","z_kco","pre_hb","diff_cut",
-      "z_fev1","z_fvc",
+      "pre_fev1_L","pre_fvc_L","pre_ratio","pre_fev1_pct","pre_fvc_pct",
+      "z_fev1_med","z_fvc_med","z_ratio","pre_tlc_pct",
+      "pre_dlco_pct","pre_kco_pct","pre_hb","diff_cut",
       // POST
-      "post_fev1_L","post_fvc_L","z_post_fev1","z_post_fvc",
-      // Ratio
+      "post_fev1_L","post_fvc_L","z_post_fev1_med","z_post_fvc_med",
+      // fixed
       "fixed_ratio",
-      // FENO/PEF/PIF/MMEF/VC
-      "feno_pred","feno_best","pef_pred","pef_best","pif_best",
-      "mmf_pred","mmf_best","vc_in_pred","vc_in_best","vc_max_pred","vc_max_best",
+      // FENO/Flujos/VC
+      "feno_pred","feno_best","pef_pred","pef_best","pif_best","mmf_pred","mmf_best","vc_in_pred","vc_in_best","vc_max_pred","vc_max_best",
+      // N2
+      "tlc_n2_pred","tlc_n2_best","vcmax_n2_pred","vcmax_n2_best","ic_n2_pred","ic_n2_best","rv_n2_pred","rv_n2_best","frc_n2_pred","frc_n2_best","erv_n2_pred","erv_n2_best",
       // outputs
       "patternTxt","obstructionSevTxt","interpretPre","interpretBD","graduationTxt","flowTableBody"
     ];
+
     for(const id of ids){
       const el = $(id);
       if(!el) continue;
       if(el.tagName === "TBODY") el.innerHTML = "";
-      else if(["DIV","ASIDE","SECTION","SPAN","H2","P","TABLE","THEAD","TR","TD"].includes(el.tagName)) el.textContent = "—";
-      else if(el.value !== undefined) el.value = "";
+      else el.value !== undefined ? el.value = "" : el.textContent = "—";
     }
     $("fixed_ratio").value = 0.70;
     $("diff_cut").value = "";
   });
 
   $("btnExample").addEventListener("click", () => {
-    // PRE (ejemplo)
+    // PRE
     $("pre_fev1_L").value="2.05";
     $("pre_fvc_L").value="2.57";
     $("pre_ratio").value="0.798";
     $("pre_fev1_pct").value="59.7";
     $("pre_fvc_pct").value="62.2";
+    $("z_fev1_med").value="-1.10";
+    $("z_fvc_med").value="-0.90";
     $("z_ratio").value="-1.70";
-
     $("pre_tlc_pct").value="78";
-    $("z_tlc").value="-1.50";
-
     $("pre_dlco_pct").value="55";
-    $("z_dlco").value="-2.30";
-
     $("pre_kco_pct").value="70";
-    $("z_kco").value="-1.80";
-
     $("pre_hb").value="13.5";
     $("diff_cut").value="80";
 
-    $("z_fev1").value="-1.10";
-    $("z_fvc").value="-0.90";
-
-    // POST (ejemplo)
+    // POST
     $("post_fev1_L").value="2.20";
     $("post_fvc_L").value="2.65";
-    $("z_post_fev1").value="-0.80";
-    $("z_post_fvc").value="-0.70";
+    $("z_post_fev1_med").value="-0.80";
+    $("z_post_fvc_med").value="-0.70";
 
-    // FENO/PEF/PIF/MMEF/VC
+    // FENO/Flujos/VC
     $("feno_pred").value="15";
     $("feno_best").value="30";
-
     $("pef_pred").value="9.0";
     $("pef_best").value="6.8";
-
     $("pif_best").value="4.9";
-
     $("mmf_pred").value="2.20";
     $("mmf_best").value="0.85";
-
     $("vc_in_pred").value="3.60";
     $("vc_in_best").value="3.10";
-
     $("vc_max_pred").value="4.10";
     $("vc_max_best").value="3.65";
+
+    // N2
+    $("tlc_n2_pred").value="6.20";
+    $("tlc_n2_best").value="5.10";
+    $("vcmax_n2_pred").value="4.80";
+    $("vcmax_n2_best").value="4.00";
+    $("ic_n2_pred").value="2.60";
+    $("ic_n2_best").value="2.10";
+    $("rv_n2_pred").value="1.80";
+    $("rv_n2_best").value="2.50";
+    $("frc_n2_pred").value="3.10";
+    $("frc_n2_best").value="3.60";
+    $("erv_n2_pred").value="1.10";
+    $("erv_n2_best").value="0.60";
 
     interpret();
   });
