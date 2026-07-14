@@ -413,12 +413,25 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
+  // ✅ CORREGIDO: acepta coma decimal ("2,05") y miles ("1.234,56")
   function num(id){
     const el = $(id);
     if(!el) return NaN;
-    const v = el.value;
-    if(v === "" || v === null || v === undefined) return NaN;
-    const n = Number(v);
+
+    const raw = (el.value ?? "").toString().trim();
+    if(raw === "") return NaN;
+
+    let s = raw;
+
+    if(s.includes(".") && s.includes(",")){
+      // Ej: "1.234,56" -> "1234.56"
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else {
+      // Ej: "2,05" -> "2.05"
+      s = s.replace(",", ".");
+    }
+
+    const n = Number(s);
     return Number.isFinite(n) ? n : NaN;
   }
 
