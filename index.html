@@ -242,7 +242,6 @@
   <section class="card">
     <h2>Espirometría + Bronco (valores medidos)</h2>
 
-    <!-- ESPIR0 -->
     <div class="block">
       <h3>Espirometría PRE (medido)</h3>
 
@@ -299,7 +298,6 @@
       </div>
     </div>
 
-    <!-- BRONCO POST -->
     <div class="block">
       <h3>Post broncodilatador ATS (medido)</h3>
 
@@ -330,7 +328,6 @@
       </div>
     </div>
 
-    <!-- FENO / Flujos / VC -->
     <div class="block">
       <h3>FENO y flujos/VC — Pred / Best (Medido) / % (Best/Pred)</h3>
       <div class="hint">PIF en Vintus solo tiene Best → %Best/Pred se muestra como “—”.</div>
@@ -341,7 +338,6 @@
           <div class="grid2">
             <div class="form-group">
               <label>FENO Pred</label>
-              <!-- ✅ Deshabilitado (no se puede introducir) -->
               <input id="feno_pred" type="number" step="1" placeholder="Ej: 15" disabled readonly />
             </div>
             <div class="form-group"><label>FENO Best (Medido)</label><input id="feno_best" type="number" step="1" placeholder="Ej: 30" /></div>
@@ -395,7 +391,6 @@
       </div>
     </div>
 
-    <!-- N2 -->
     <div class="block">
       <h3>Volúmenes pulmonares N2 (lavado de nitrógeno) — Pred / Best / %</h3>
 
@@ -454,7 +449,6 @@
       </div>
     </div>
 
-    <!-- DIFUSIÓN (VENTANA INDEPENDIENTE) -->
     <div class="block">
       <h3>Test de difusión (DLCO/KCO) — valores medidos</h3>
 
@@ -541,7 +535,6 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
-  // ✅ CORREGIDO (coma decimal / miles) + corrección del patrón PRE
   function num(id){
     const el = $(id);
     if(!el) return NaN;
@@ -552,10 +545,8 @@
     let s = raw;
 
     if(s.includes(".") && s.includes(",")){
-      // Ej: "1.234,56" => "1234.56"
       s = s.replace(/\./g, "").replace(",", ".");
     } else {
-      // Ej: "2,05" => "2.05"
       s = s.replace(",", ".");
     }
 
@@ -592,6 +583,21 @@
     if(pct >= 80) return { nivel:"Leve / dentro de lo esperado" };
     if(pct >= 60) return { nivel:"Moderada alteración" };
     return { nivel:"Grave / marcada alteración" };
+  }
+
+  // ✅ NUEVO: interpretación orientativa del FENO medido (ppb)
+  function interpretFENO(fenoBest){
+    if(!Number.isFinite(fenoBest)) return "FENO: —";
+
+    // Umbrales orientativos (pueden variar por guía/lab):
+    // <25: bajo  | 25–50: intermedio | >50: elevado (compat. con inflamación eosinofílica tipo 2)
+    if(fenoBest < 25){
+      return `FENO: ${fenoBest.toFixed(0)} ppb — bajo (menos probable inflamación eosinofílica tipo 2).`;
+    }
+    if(fenoBest <= 50){
+      return `FENO: ${fenoBest.toFixed(0)} ppb — intermedio (posible inflamación eosinofílica; interpretar según contexto).`;
+    }
+    return `FENO: ${fenoBest.toFixed(0)} ppb — elevado (compatible con inflamación eosinofílica tipo 2).`;
   }
 
   function bronchodilatorATSClassic(preFev1L, preFvcL, postFev1L, postFvcL){
@@ -654,7 +660,7 @@
 
   function renderAllPredBestTable(){
     const rows = [
-      // ✅ FENO: no puede haber Pred. (Se muestra solo Best, Pred y % como “—”)
+      // ✅ FENO: sin Pred y sin % para evitar incoherencias
       buildRow("FENO", "feno_pred", "feno_best", false),
 
       buildRow("PEF", "pef_pred", "pef_best", true),
@@ -700,13 +706,11 @@
 
     const obstrSev = sevObstructionByFEV1Pct(preFev1Pct);
 
-    // obstructed boolean si hay ratio y fixedRatio válidos
     let obstructed = null;
     if(Number.isFinite(ratio) && Number.isFinite(fixedRatio)){
       obstructed = (ratio < fixedRatio);
     }
 
-    // Patrón (orientativo sin TLC confirmatoria)
     let restrProbable = null;
     if(typeof obstructed === "boolean" && Number.isFinite(preFvcPct)){
       restrProbable = (preFvcPct < 80 && obstructed === false);
@@ -726,9 +730,12 @@
 
     $("patternTxt").textContent = pattern;
 
-    // ✅ Severidad solo si hay obstrucción
     const showSevObstr = (typeof obstructed === "boolean" && obstructed === true && Number.isFinite(preFev1Pct));
     $("obstructionSevTxt").textContent = showSevObstr ? obstrSev.sevTxt : "—";
+
+    // ✅ NUEVO: interpretación del FENO medido
+    const fenoBest = num("feno_best");
+    const fenoTxt = interpretFENO(fenoBest);
 
     $("interpretPre").textContent = [
       `Patrón (PRE): ${pattern}`,
@@ -736,6 +743,7 @@
       (typeof obstructed === "boolean")
         ? `Obstrucción: ${obstructed ? "Sí" : "No"}${obstructed ? " — severidad: "+obstrSev.sevTxt : ""}.`
         : `Obstrucción: indeterminada (falta FEV1/FVC).`,
+      fenoTxt,
       (typeof restrProbable === "boolean")
         ? `Restricción probable (orientativa, sin TLC): ${restrProbable ? "Sí" : "No"} (FVC%medido=${Number.isFinite(preFvcPct)?preFvcPct.toFixed(1)+"%":"—"}).`
         : `Restricción probable: indeterminada (faltan datos).`,
@@ -868,7 +876,7 @@
     $("fixed_ratio").value="0.70";
 
     // FENO/Flujos/VC
-    $("feno_pred").value="15"; // (no editable por usuario; se ignora en la tabla por lógica)
+    $("feno_pred").value="15"; // (no editable por usuario; no afecta a la tabla ni al cálculo del FENO pred)
     $("feno_best").value="30";
     $("pef_pred").value="9.0";
     $("pef_best").value="6.8";
