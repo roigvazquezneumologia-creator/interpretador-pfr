@@ -242,6 +242,7 @@
   <section class="card">
     <h2>Espirometría + Bronco (valores medidos)</h2>
 
+    <!-- ESPIR0 -->
     <div class="block">
       <h3>Espirometría PRE (medido)</h3>
 
@@ -298,6 +299,7 @@
       </div>
     </div>
 
+    <!-- BRONCO POST -->
     <div class="block">
       <h3>Post broncodilatador ATS (medido)</h3>
 
@@ -328,6 +330,7 @@
       </div>
     </div>
 
+    <!-- FENO / Flujos / VC -->
     <div class="block">
       <h3>FENO y flujos/VC — Pred / Best (Medido) / % (Best/Pred)</h3>
       <div class="hint">PIF en Vintus solo tiene Best → %Best/Pred se muestra como “—”.</div>
@@ -336,7 +339,11 @@
         <div class="block" style="margin-top:0;">
           <h3 style="margin-top:0;">FENO</h3>
           <div class="grid2">
-            <div class="form-group"><label>FENO Pred</label><input id="feno_pred" type="number" step="1" placeholder="Ej: 15" /></div>
+            <div class="form-group">
+              <label>FENO Pred</label>
+              <!-- ✅ Deshabilitado (no se puede introducir) -->
+              <input id="feno_pred" type="number" step="1" placeholder="Ej: 15" disabled readonly />
+            </div>
             <div class="form-group"><label>FENO Best (Medido)</label><input id="feno_best" type="number" step="1" placeholder="Ej: 30" /></div>
           </div>
         </div>
@@ -388,6 +395,7 @@
       </div>
     </div>
 
+    <!-- N2 -->
     <div class="block">
       <h3>Volúmenes pulmonares N2 (lavado de nitrógeno) — Pred / Best / %</h3>
 
@@ -446,6 +454,7 @@
       </div>
     </div>
 
+    <!-- DIFUSIÓN (VENTANA INDEPENDIENTE) -->
     <div class="block">
       <h3>Test de difusión (DLCO/KCO) — valores medidos</h3>
 
@@ -532,9 +541,7 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
-  // ✅ CORREGIDO: acepta coma decimal ("2,05") y miles ("1.234,56")
-  // ✅ CORREGIDO: el fallo de "Interpretación incompleta" venía de usar Number.isFinite(obstructed)
-  //    cuando obstructed era boolean (true/false). Ahora se comprueba con typeof === 'boolean'.
+  // ✅ CORREGIDO (coma decimal / miles) + corrección del patrón PRE
   function num(id){
     const el = $(id);
     if(!el) return NaN;
@@ -647,7 +654,9 @@
 
   function renderAllPredBestTable(){
     const rows = [
-      buildRow("FENO", "feno_pred", "feno_best", true),
+      // ✅ FENO: no puede haber Pred. (Se muestra solo Best, Pred y % como “—”)
+      buildRow("FENO", "feno_pred", "feno_best", false),
+
       buildRow("PEF", "pef_pred", "pef_best", true),
       buildRow("PIF", null, "pif_best", false),
       buildRow("MMEF75/25", "mmf_pred", "mmf_best", true),
@@ -691,14 +700,14 @@
 
     const obstrSev = sevObstructionByFEV1Pct(preFev1Pct);
 
-    // ✅ CORREGIDO: obstructed es boolean, NO usar Number.isFinite(obstructed)
-    let obstructed = null; // true/false cuando ratio y fixedRatio sean válidos
+    // obstructed boolean si hay ratio y fixedRatio válidos
+    let obstructed = null;
     if(Number.isFinite(ratio) && Number.isFinite(fixedRatio)){
       obstructed = (ratio < fixedRatio);
     }
 
     // Patrón (orientativo sin TLC confirmatoria)
-    let restrProbable = null; // boolean cuando obstructed y preFvcPct sean válidos
+    let restrProbable = null;
     if(typeof obstructed === "boolean" && Number.isFinite(preFvcPct)){
       restrProbable = (preFvcPct < 80 && obstructed === false);
     }
@@ -717,7 +726,9 @@
 
     $("patternTxt").textContent = pattern;
 
-    $("obstructionSevTxt").textContent = Number.isFinite(preFev1Pct) ? obstrSev.sevTxt : "—";
+    // ✅ Severidad solo si hay obstrucción
+    const showSevObstr = (typeof obstructed === "boolean" && obstructed === true && Number.isFinite(preFev1Pct));
+    $("obstructionSevTxt").textContent = showSevObstr ? obstrSev.sevTxt : "—";
 
     $("interpretPre").textContent = [
       `Patrón (PRE): ${pattern}`,
@@ -728,7 +739,7 @@
       (typeof restrProbable === "boolean")
         ? `Restricción probable (orientativa, sin TLC): ${restrProbable ? "Sí" : "No"} (FVC%medido=${Number.isFinite(preFvcPct)?preFvcPct.toFixed(1)+"%":"—"}).`
         : `Restricción probable: indeterminada (faltan datos).`,
-      `Severidad obstrucción por FEV1 %Pred (medido): ${Number.isFinite(preFev1Pct)?obstrSev.sevTxt:"—"}.`
+      `Severidad obstrucción por FEV1 %Pred (medido): ${showSevObstr ? obstrSev.sevTxt : "—"}.`
     ].join("\n");
 
     // Bronco ATS clásico
@@ -857,7 +868,7 @@
     $("fixed_ratio").value="0.70";
 
     // FENO/Flujos/VC
-    $("feno_pred").value="15";
+    $("feno_pred").value="15"; // (no editable por usuario; se ignora en la tabla por lógica)
     $("feno_best").value="30";
     $("pef_pred").value="9.0";
     $("pef_best").value="6.8";
